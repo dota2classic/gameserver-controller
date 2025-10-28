@@ -24,7 +24,7 @@ jobs:
       # Build the Go binary
       - name: Build Go binary
         run: |
-          go build -o gs-controller cmd/server/main.go
+          go build -o gs-controller cmd/controller/main.go
 
       # Run tests if any
       - name: Run tests
