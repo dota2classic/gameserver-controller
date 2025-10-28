@@ -80,15 +80,15 @@ func handleMessage[T any](msg *amqp.Delivery, handler func(event *T) error) {
 	err = handler(&event)
 
 	if err != nil {
-		err = msg.Ack(false)
-		if err != nil {
-			log.Fatalf("Failed to ack message %v", err)
-		}
-	} else {
 		log.Printf("Failed to process message: %v", err)
 		err = msg.Nack(false, true)
 		if err != nil {
 			log.Fatalf("Failed to nack message %v", err)
+		}
+	} else {
+		err = msg.Ack(false)
+		if err != nil {
+			log.Fatalf("Failed to ack message %v", err)
 		}
 	}
 
