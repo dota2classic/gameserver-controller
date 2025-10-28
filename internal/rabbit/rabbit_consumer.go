@@ -49,11 +49,14 @@ func initQueue(ch *amqp.Channel, region models.Region) {
 
 	log.Printf("Start consuming queue %s", queueName)
 
-	// 5. Consume messages (infinite loop)
-	for msg := range msgs {
-		log.Printf("Received: %s", msg.Body)
-		handleMessage(&msg, handleLaunchGameServerCommand)
-	}
+	// Run the consumer loop in its own goroutine
+	go func() {
+		for msg := range msgs {
+			log.Printf("Received: %s", msg.Body)
+			handleMessage(&msg, handleLaunchGameServerCommand)
+		}
+		log.Printf("Queue consumer for %s stopped", queueName)
+	}()
 }
 
 func handleMessage[T any](msg *amqp.Delivery, handler func(event *T) error) {
