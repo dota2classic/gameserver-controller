@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Go
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      # Build the Go binary
+      - name: Build Go binary
+        run: |
+          go build -o gs-controller cmd/server/main.go
+
+      # Run tests if any
+      - name: Run tests
+        run: |
+          go test ./...
