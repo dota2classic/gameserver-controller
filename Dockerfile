@@ -12,7 +12,7 @@ WORKDIR /root
 COPY . .
 
 # Build the Go binary
-RUN go build -o controller cmd/server/main.go
+RUN go build -o controller cmd/controller/main.go
 
 # -----------------------------
 
