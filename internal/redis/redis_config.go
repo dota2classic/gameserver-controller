@@ -15,7 +15,7 @@ import (
 
 var ctx = context.Background()
 
-var client *redis.Client
+var Client *redis.Client
 
 func InitRedisClient() {
 	host := os.Getenv("REDIS_HOST")
@@ -23,8 +23,8 @@ func InitRedisClient() {
 
 	password := os.Getenv("REDIS_PASSWORD")
 
-	// Create client
-	client = redis.NewClient(&redis.Options{
+	// Create Client
+	Client = redis.NewClient(&redis.Options{
 		Addr:         fmt.Sprintf("%s:%d", host, port),
 		Password:     password,
 		DB:           0,
@@ -35,11 +35,11 @@ func InitRedisClient() {
 	})
 
 	// Test connection
-	if err := client.Ping(ctx).Err(); err != nil {
+	if err := Client.Ping(ctx).Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Redis client initialized")
+	log.Println("Redis Client initialized")
 }
 
 // publishWithRetry publishes a message with automatic retry logic.
@@ -53,7 +53,7 @@ func publishWithRetry[T any](channel string, event *T, retries int) error {
 
 	for attempt := 1; attempt <= retries; attempt++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		err = client.Publish(ctx, channel, message).Err()
+		err = Client.Publish(ctx, channel, message).Err()
 		cancel()
 
 		if err == nil {

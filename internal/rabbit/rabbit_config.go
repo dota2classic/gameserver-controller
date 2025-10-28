@@ -14,12 +14,12 @@ import (
 )
 
 type rabbitContainer struct {
-	conn     *amqp.Connection
+	Conn     *amqp.Connection
 	channel  *amqp.Channel
 	exchange string
 }
 
-var client *rabbitContainer
+var Client *rabbitContainer
 
 func InitRabbitPublisher() {
 	host := os.Getenv("RABBITMQ_HOST")
@@ -61,8 +61,8 @@ func InitRabbitPublisher() {
 
 	initConsumer(ch)
 
-	client = &rabbitContainer{
-		conn:     conn,
+	Client = &rabbitContainer{
+		Conn:     conn,
 		channel:  ch,
 		exchange: exchange,
 	}
@@ -79,8 +79,8 @@ func publishWithRetry[T any](event *T, routingKey string, retries int) error {
 	}
 
 	for attempt := 1; attempt <= retries; attempt++ {
-		err = client.channel.Publish(
-			client.exchange, // exchange
+		err = Client.channel.Publish(
+			Client.exchange, // exchange
 			routingKey,
 			false, // mandatory
 			false, // immediate
@@ -95,7 +95,7 @@ func publishWithRetry[T any](event *T, routingKey string, retries int) error {
 			return nil
 		}
 
-		// Check if it's a transient error (network, closed conn, etc.)
+		// Check if it's a transient error (network, closed Conn, etc.)
 		if errors.Is(err, context.DeadlineExceeded) {
 			fmt.Printf("rabbitmq publish failed (attempt %d/%d): %v — retrying...\n", attempt, retries, err)
 			time.Sleep(time.Duration(attempt) * 200 * time.Millisecond)
@@ -114,7 +114,7 @@ func (r *rabbitContainer) Close() {
 	if r.channel != nil {
 		r.channel.Close()
 	}
-	if r.conn != nil {
-		r.conn.Close()
+	if r.Conn != nil {
+		r.Conn.Close()
 	}
 }
