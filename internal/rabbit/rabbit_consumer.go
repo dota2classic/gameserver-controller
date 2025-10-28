@@ -33,6 +33,12 @@ func initQueue(ch *amqp.Channel, region models.Region) {
 		log.Fatalf("Failed to declare queue: %v", err)
 	}
 
+	err = ch.QueueBind(queueName, fmt.Sprintf("%s.%s", messageName, region), "app.events", false, amqp.Table{})
+
+	if err != nil {
+		log.Fatalf("Failed to bind queue: %v", err)
+	}
+
 	// Start consuming
 	msgs, err := ch.Consume(
 		queueName, // queue
@@ -43,6 +49,7 @@ func initQueue(ch *amqp.Channel, region models.Region) {
 		false,
 		nil,
 	)
+
 	if err != nil {
 		log.Fatalf("failed to register consumer: %v", err)
 	}
