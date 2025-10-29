@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"d2c-gs-controller/internal/redis"
 	"d2c-gs-controller/internal/util"
 	"errors"
 
@@ -33,13 +34,22 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		password = "rconpassword"
 	}
 
+	gsPort, tvPort, err := redis.AllocateGameServerPorts()
+
+	if err != nil {
+		log.Printf("Error allocating game server ports: %v", err)
+		return nil, err
+	}
+
 	data := templateData{
-		MatchId:      evt.MatchID,
-		GameMode:     evt.GameMode,
-		LobbyType:    evt.LobbyType,
-		Map:          evt.Map,
-		Region:       evt.Region,
-		RconPassword: password,
+		MatchId:          evt.MatchID,
+		GameMode:         evt.GameMode,
+		LobbyType:        evt.LobbyType,
+		Map:              evt.Map,
+		Region:           evt.Region,
+		RconPassword:     password,
+		HostGamePort:     gsPort,
+		HostSourceTVPort: tvPort,
 	}
 
 	namespace := "default"

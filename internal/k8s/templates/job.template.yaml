@@ -35,8 +35,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
-            - name: HOST_PORT
-              value: "27015"
             - name: LOBBY_TYPE
               value: "{{ .LobbyType }}"
             - name: GAME_MODE
@@ -57,22 +55,22 @@ spec:
             - name: tcp-27015
               containerPort: 27015
               protocol: TCP
-              hostPort: 27015
+              hostPort: {{ .HostGamePort }}
             # 27015 UDP
             - name: udp-27015
               containerPort: 27015
               protocol: UDP
-              hostPort: 27015
+              hostPort: {{ .HostGamePort }}
             # 27020 TCP
             - name: tcp-27020
               containerPort: 27020
               protocol: TCP
-              hostPort: 27020
+              hostPort: {{ .HostSourceTVPort }}
             # 27020 UDP
             - name: udp-27020
               containerPort: 27020
               protocol: UDP
-              hostPort: 27020
+              hostPort: {{ .HostSourceTVPort }}
           volumeMounts:
             - name: match-cfg
               mountPath: /root/dota/match_cfg

@@ -33,6 +33,9 @@ type templateData struct {
 	Region       models.Region
 	RconPassword string
 	MatchJson    string
+
+	HostGamePort     int
+	HostSourceTVPort int
 }
 
 func createConfiguration[T any](templateContent string, data *templateData) (*T, error) {

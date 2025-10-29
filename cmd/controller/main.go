@@ -2,6 +2,7 @@ package main
 
 import (
 	"d2c-gs-controller/internal/db"
+	"d2c-gs-controller/internal/monitor"
 	"d2c-gs-controller/internal/monitoring"
 	"d2c-gs-controller/internal/rabbit"
 	"d2c-gs-controller/internal/redis"
@@ -26,6 +27,8 @@ func main() {
 	db.ConnectAndMigrate()
 	rabbit.InitRabbit()
 	redis.InitRedisClient()
+
+	go monitor.CronMatchResourceStatus()
 
 	health := monitoring.NewHealthServer(redis.Client, rabbit.Instance.Conn)
 	log.Println("Starting server")
