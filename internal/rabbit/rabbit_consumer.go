@@ -95,6 +95,6 @@ func handleMessage[T any](msg *amqp.Delivery, handler func(event *T) error) {
 }
 
 func handleLaunchGameServerCommand(event *models.LaunchGameServerCommand) error {
-	log.Println("Launching game server YASSSS")
+	log.Printf("Launching game server YASSSS %v\n", event)
 	return nil
 }

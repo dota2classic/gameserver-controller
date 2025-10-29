@@ -1,0 +1,110 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gameserver-job-{{ .MatchId }}
+spec:
+  ttlSecondsAfterFinished: 60
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never  # don't restart Pod
+      nodeSelector:
+        gs-node: "true"
+        region: "{{ .Region }}"
+      containers:
+        - name: sidecar
+          imagePullPolicy: Always
+          image: dota2classic/srcds-sidecar:k8s-latest
+          ports:
+            - name: http-port
+              containerPort: 7777
+              protocol: TCP
+          volumeMounts:
+            - name: match-cfg
+              mountPath: /root/cfg
+            - name: logs
+              mountPath: /root/dota/logs
+            - name: replays
+              mountPath: /root/dota/replays
+            - name: dumps
+              mountPath: /tmp/dumps
+          env:
+            - name: MATCH_ID
+              value: "{{ .MatchId }}"
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: HOST_PORT
+              value: "27015"
+            - name: LOBBY_TYPE
+              value: "{{ .LobbyType }}"
+            - name: GAME_MODE
+              value: "{{ .GameMode }}"
+
+          envFrom:
+            - secretRef:
+                name: shared-secrets # Global cluster secrets
+            - secretRef:
+                name: gameserver-secrets-{{ .MatchId }}  # Match specific secrets
+
+
+        - name: gameserver
+          imagePullPolicy: Always
+          image: dota2classic/srcds:d684_dev-k8s-latest
+          ports:
+            # 27015 TCP
+            - name: tcp-27015
+              containerPort: 27015
+              protocol: TCP
+              hostPort: 27015
+            # 27015 UDP
+            - name: udp-27015
+              containerPort: 27015
+              protocol: UDP
+              hostPort: 27015
+            # 27020 TCP
+            - name: tcp-27020
+              containerPort: 27020
+              protocol: TCP
+              hostPort: 27020
+            # 27020 UDP
+            - name: udp-27020
+              containerPort: 27020
+              protocol: UDP
+              hostPort: 27020
+          volumeMounts:
+            - name: match-cfg
+              mountPath: /root/dota/match_cfg
+            - name: logs
+              mountPath: /root/dota/logs
+            - name: replays
+              mountPath: /root/dota/replays
+            - name: dumps
+              mountPath: /tmp/dumps
+          env:
+            - name: MAP
+              value: "{{ .Map }}"
+            - name: GAMEMODE
+              value: "{{ .GameMode }}"
+            - name: MASTER_SERVER
+              value: "http://localhost:7777" # Sidecar
+            - name: LOGFILE_NAME
+              value: "match_{{ .MatchId }}.log"
+            - name: RCON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gameserver-secrets-{{ .MatchId }}
+                  key: RCON_PASSWORD
+
+
+      volumes:
+        - name: match-cfg
+          configMap:
+            name: gameserver-config-{{ .MatchId }}
+        - name: logs
+          emptyDir: {}
+        - name: replays
+          emptyDir: {}
+        - name: dumps
+          emptyDir: {}

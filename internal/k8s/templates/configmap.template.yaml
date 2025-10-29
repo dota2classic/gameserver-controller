@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gameserver-config-{{ .MatchId }}
+data:
+  match.json: |
+    {{ .MatchJson }}
