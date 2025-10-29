@@ -5,6 +5,7 @@ import (
 	"d2c-gs-controller/internal/db"
 	"d2c-gs-controller/internal/k8s"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -71,7 +72,9 @@ func (r *Rabbit) startConsuming(queue, exchange, key string, handler func(msg []
 
 			for m := range msgs {
 				if err := handler(m.Body); err != nil {
-					m.Nack(false, true)
+					// if its any error other than "job alreadty exists", we requeue
+					shouldRequeue := !errors.Is(err, k8s.ErrJobAlreadyExists)
+					m.Nack(false, shouldRequeue)
 				} else {
 					m.Ack(false)
 				}
@@ -81,60 +84,6 @@ func (r *Rabbit) startConsuming(queue, exchange, key string, handler func(msg []
 			time.Sleep(2 * time.Second)
 		}
 	}()
-}
-
-func initQueue(ch *amqp.Channel, region models.Region) error {
-	serviceName := "d2c-gs-controller"
-	messageName := "LaunchGameServerCommand"
-	queueName := fmt.Sprintf("%s.%s.%s", serviceName, messageName, region)
-
-	// Ensure queue exists
-	_, err := ch.QueueDeclare(
-		queueName,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare queue: %w", err)
-	}
-
-	log.Printf("Queue declared: %v", queueName)
-
-	err = ch.QueueBind(queueName, fmt.Sprintf("%s.%s", messageName, region), "app.events", false, amqp.Table{})
-
-	if err != nil {
-		return fmt.Errorf("failed to bind queue: %w", err)
-	}
-
-	// Start consuming
-	msgs, err := ch.Consume(
-		queueName, // queue
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-
-	if err != nil {
-		return fmt.Errorf("failed to register consumer: %w", err)
-	}
-
-	log.Printf("Start consuming queue %s", queueName)
-
-	// Run the consumer loop in its own goroutine
-	go func() {
-		for msg := range msgs {
-			log.Printf("Received: %s", msg.Body)
-			handleMessage(&msg, handleLaunchGameServerCommand)
-		}
-		log.Printf("Queue consumer for %s stopped", queueName)
-	}()
-	return nil
 }
 
 func handleMessage[T any](msg *amqp.Delivery, handler func(event *T) error) {

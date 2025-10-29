@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"d2c-gs-controller/internal/util"
+	"errors"
 
 	"log"
 
@@ -12,6 +13,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 type DeployedMatch struct {
@@ -19,6 +22,8 @@ type DeployedMatch struct {
 	SecretName    string
 	JobName       string
 }
+
+var ErrJobAlreadyExists = errors.New("gameserver already running")
 
 func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, evt *models.LaunchGameServerCommand) (*DeployedMatch, error) {
 
@@ -40,33 +45,19 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	namespace := "default"
 
 	// --- 1. CONFIGMAP ---
-	configMap, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, &data)
+	configMap, err := ensureConfigMap(ctx, clientset, namespace, &data)
 	if err != nil {
-		log.Printf("Error creating configmap %v", err)
 		return nil, err
 	}
-	_, err = clientset.CoreV1().ConfigMaps(namespace).Create(ctx, configMap, metav1.CreateOptions{})
-	if err != nil {
-		log.Printf("Error creating configmap %v", err)
-		return nil, err
-	}
-	log.Println("Created ConfigMap")
 
 	// --- 2. SECRET ---
-	secret, err := createConfiguration[corev1.Secret](SecretTemplate, &data)
+	secret, err := ensureSecret(ctx, clientset, namespace, &data)
 	if err != nil {
-		log.Printf("Error creating secret %v", err)
 		return nil, err
 	}
-	_, err = clientset.CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
-	if err != nil {
-		log.Printf("Error creating secret %v", err)
-		return nil, err
-	}
-	log.Println("Created Secret")
 
 	// --- 3. JOB ---
-	job, err := createConfiguration[batchv1.Job](JobTemplate, &data)
+	job, err := createJob(ctx, clientset, namespace, &data)
 	if err != nil {
 		log.Printf("Error creating job %v", err)
 		return nil, err
@@ -83,4 +74,55 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		SecretName:    secret.Name,
 		JobName:       job.Name,
 	}, nil
+}
+
+func ensureConfigMap(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*corev1.ConfigMap, error) {
+	configMap, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, data)
+	_, err = clientset.CoreV1().ConfigMaps(namespace).Create(ctx, configMap, metav1.CreateOptions{})
+	if err != nil {
+		if k8serrors.IsAlreadyExists(err) {
+			log.Printf("ConfigMap already exists - updating")
+			// Optionally you can update it instead:
+			_, err = clientset.CoreV1().ConfigMaps(namespace).Update(ctx, configMap, metav1.UpdateOptions{})
+			return configMap, nil
+		}
+		log.Printf("Error creating ConfigMap: %v", err)
+		return nil, err
+	}
+	log.Println("Created ConfigMap")
+	return configMap, nil
+}
+
+func ensureSecret(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*corev1.Secret, error) {
+	secret, err := createConfiguration[corev1.Secret](SecretTemplate, data)
+	_, err = clientset.CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
+
+	if err != nil {
+		if k8serrors.IsAlreadyExists(err) {
+			log.Printf("Secret already exists - updating")
+			// Optionally you can update it instead:
+			_, err = clientset.CoreV1().Secrets(namespace).Update(ctx, secret, metav1.UpdateOptions{})
+			return secret, nil
+		}
+		log.Printf("Error creating Secret: %v", err)
+		return nil, err
+	}
+	log.Println("Created Secret")
+	return secret, nil
+}
+
+func createJob(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*batchv1.Job, error) {
+	job, err := createConfiguration[batchv1.Job](JobTemplate, data)
+	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
+
+	if err != nil {
+		if k8serrors.IsAlreadyExists(err) {
+			log.Printf("Job already exists: we fail hard")
+			return nil, ErrJobAlreadyExists
+		}
+		log.Printf("Error creating job: %v", err)
+		return nil, err
+	}
+	log.Println("Created Job!")
+	return job, nil
 }
