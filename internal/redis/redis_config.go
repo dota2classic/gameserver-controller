@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"d2c-gs-controller/internal/util"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/dota2classic/d2c-go-models/util"
 	"github.com/redis/go-redis/v9"
 )
 

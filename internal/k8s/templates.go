@@ -6,13 +6,24 @@ import (
 
 	"github.com/dota2classic/d2c-go-models/models"
 	"sigs.k8s.io/yaml"
+
+	_ "embed"
 )
 
-const (
-	SECRET_TEMPLATE    = "templates/secret.template.yaml"
-	CONFIGMAP_TEMPLATE = "templates/configmap.template.yaml"
-	JOB_TEMPLATE       = "templates/job.template.yaml"
-)
+//go:embed templates/secret.template.yaml
+var SecretTemplate string
+
+//go:embed templates/configmap.template.yaml
+var ConfigmapTemplate string
+
+//go:embed templates/job.template.yaml
+var JobTemplate string
+
+//const (
+//	SECRET_TEMPLATE    = "./templates/secret.template.yaml"
+//	CONFIGMAP_TEMPLATE = "./templates/configmap.template.yaml"
+//	JOB_TEMPLATE       = "./templates/job.template.yaml"
+//)
 
 type templateData struct {
 	MatchId      int64
@@ -24,8 +35,8 @@ type templateData struct {
 	MatchJson    string
 }
 
-func createConfiguration[T any](templatePath string, data *templateData) (*T, error) {
-	tmpl, err := template.ParseFiles(templatePath)
+func createConfiguration[T any](templateContent string, data *templateData) (*T, error) {
+	tmpl, err := template.New("tmpl").Parse(templateContent)
 	if err != nil {
 		return nil, err
 	}

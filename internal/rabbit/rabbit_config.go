@@ -1,27 +1,62 @@
 package rabbit
 
 import (
-	"context"
-	"d2c-gs-controller/internal/util"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/dota2classic/d2c-go-models/util"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type rabbitContainer struct {
-	Conn     *amqp.Connection
-	channel  *amqp.Channel
+type Rabbit struct {
+	amqpURL  string
 	exchange string
+	Conn     *amqp.Connection
 }
 
-var Client *rabbitContainer
+func NewRabbit(amqpURL string) *Rabbit {
+	return &Rabbit{amqpURL: amqpURL, exchange: "app.events"}
+}
 
-func InitRabbitPublisher() {
+var Instance *Rabbit
+
+// Connect establishes the connection with auto-reconnect
+func (r *Rabbit) Connect() error {
+	for {
+		conn, err := amqp.Dial(r.amqpURL)
+		if err != nil {
+			log.Printf("RabbitMQ connect failed: %v. Retrying in 5s...", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		r.Conn = conn
+		return nil
+	}
+}
+
+// Channel creates a fresh channel, reconnecting if needed
+func (r *Rabbit) getChannel() (*amqp.Channel, error) {
+	for {
+		if r.Conn == nil || r.Conn.IsClosed() {
+			if err := r.Connect(); err != nil {
+				continue
+			}
+		}
+
+		ch, err := r.Conn.Channel()
+		if err != nil {
+			log.Printf("Failed to open channel: %v. Reconnecting...", err)
+			r.Conn.Close()
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		return ch, nil
+	}
+}
+
+func InitRabbit() {
 	host := os.Getenv("RABBITMQ_HOST")
 	port := util.GetEnvInt("RABBITMQ_PORT", 5672)
 
@@ -32,15 +67,12 @@ func InitRabbitPublisher() {
 
 	amqpURL := fmt.Sprintf("amqp://%s:%s@%s:%d/", username, password, host, port)
 
-	conn, err := amqp.Dial(amqpURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	Instance = NewRabbit(amqpURL)
 
-	ch, err := conn.Channel()
+	ch, err := Instance.getChannel()
 	if err != nil {
-		conn.Close()
-		log.Fatal(err)
+		Instance.Conn.Close()
+		log.Fatalf("Failed to obtain channel %v", err)
 	}
 
 	// Declare our exchange
@@ -54,67 +86,11 @@ func InitRabbitPublisher() {
 		nil,
 	)
 	if err != nil {
-		ch.Close()
-		conn.Close()
-		log.Fatal(err)
+		Instance.Conn.Close()
+		log.Fatalf("Failed to create exchange %v", err)
 	}
 
-	initConsumer(ch)
+	Instance.initConsumers()
 
-	Client = &rabbitContainer{
-		Conn:     conn,
-		channel:  ch,
-		exchange: exchange,
-	}
-
-	log.Println("RabbitMQ publisher initialized")
-}
-
-func publishWithRetry[T any](event *T, routingKey string, retries int) error {
-	var err error
-
-	message, err := json.Marshal(event)
-	if err != nil {
-		return fmt.Errorf("can't serialize payload: %w", err)
-	}
-
-	for attempt := 1; attempt <= retries; attempt++ {
-		err = Client.channel.Publish(
-			Client.exchange, // exchange
-			routingKey,
-			false, // mandatory
-			false, // immediate
-			amqp.Publishing{
-				ContentType: "application/json",
-				Body:        message,
-				Timestamp:   time.Now(),
-			},
-		)
-
-		if err == nil {
-			return nil
-		}
-
-		// Check if it's a transient error (network, closed Conn, etc.)
-		if errors.Is(err, context.DeadlineExceeded) {
-			fmt.Printf("rabbitmq publish failed (attempt %d/%d): %v — retrying...\n", attempt, retries, err)
-			time.Sleep(time.Duration(attempt) * 200 * time.Millisecond)
-			continue
-		}
-
-		// Non-retryable error
-		return fmt.Errorf("rabbitmq publish failed: %w", err)
-	}
-
-	return fmt.Errorf("rabbitmq publish failed after %d retries: %w", retries, err)
-}
-
-// Close the connection and channel
-func (r *rabbitContainer) Close() {
-	if r.channel != nil {
-		r.channel.Close()
-	}
-	if r.Conn != nil {
-		r.Conn.Close()
-	}
+	log.Println("RabbitMQ consumer initialized")
 }

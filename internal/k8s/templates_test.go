@@ -23,7 +23,7 @@ var data = templateData{
 }
 
 func TestCreateConfigmap(t *testing.T) {
-	cfg, err := createConfiguration[corev1.ConfigMap](CONFIGMAP_TEMPLATE, &data)
+	cfg, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, &data)
 	configName := fmt.Sprintf("gameserver-config-%d", data.MatchId)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func TestCreateConfigmap(t *testing.T) {
 }
 
 func TestCreateSecret(t *testing.T) {
-	cfg, err := createConfiguration[corev1.Secret](SECRET_TEMPLATE, &data)
+	cfg, err := createConfiguration[corev1.Secret](SecretTemplate, &data)
 	secretName := fmt.Sprintf("gameserver-secrets-%d", data.MatchId)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func TestCreateSecret(t *testing.T) {
 }
 
 func TestCreateJob(t *testing.T) {
-	job, err := createConfiguration[batchv1.Job](JOB_TEMPLATE, &data)
+	job, err := createConfiguration[batchv1.Job](JobTemplate, &data)
 	jobName := fmt.Sprintf("gameserver-job-%d", data.MatchId)
 
 	if err != nil {
