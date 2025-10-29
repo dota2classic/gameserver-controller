@@ -41,6 +41,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 	// --- 1. CONFIGMAP ---
 	configMap, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, &data)
+	if err != nil {
+		log.Printf("Error creating configmap %v", err)
+		return nil, err
+	}
 	_, err = clientset.CoreV1().ConfigMaps(namespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		log.Printf("Error creating configmap %v", err)
@@ -50,6 +54,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 	// --- 2. SECRET ---
 	secret, err := createConfiguration[corev1.Secret](SecretTemplate, &data)
+	if err != nil {
+		log.Printf("Error creating secret %v", err)
+		return nil, err
+	}
 	_, err = clientset.CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
 	if err != nil {
 		log.Printf("Error creating secret %v", err)
@@ -59,6 +67,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 	// --- 3. JOB ---
 	job, err := createConfiguration[batchv1.Job](JobTemplate, &data)
+	if err != nil {
+		log.Printf("Error creating job %v", err)
+		return nil, err
+	}
 	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		log.Printf("Error creating job %v", err)

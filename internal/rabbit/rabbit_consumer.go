@@ -169,7 +169,7 @@ func handleLaunchGameServerCommand(event *models.LaunchGameServerCommand) error 
 	log.Printf("Launching game server for matchId %d", event.MatchID)
 	mr, err := k8s.DeployMatchResources(context.Background(), k8s.GetClient(), event)
 	if err != nil {
-		log.Fatalf("Failed to deploy match: %v", err)
+		log.Printf("Failed to deploy match: %v", err)
 		return err
 	}
 	log.Printf("Match %d successfully deployed", event.MatchID)
