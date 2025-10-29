@@ -59,15 +59,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	// --- 3. JOB ---
 	job, err := createJob(ctx, clientset, namespace, &data)
 	if err != nil {
-		log.Printf("Error creating job %v", err)
 		return nil, err
 	}
-	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
-	if err != nil {
-		log.Printf("Error creating job %v", err)
-		return nil, err
-	}
-	log.Println("Created Job")
 
 	return &DeployedMatch{
 		ConfigMapName: configMap.Name,
