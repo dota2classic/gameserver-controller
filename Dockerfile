@@ -25,6 +25,9 @@ WORKDIR /root
 # Copy the binary from builder
 COPY --from=builder /root/controller .
 
+# Copy migrations
+COPY --from=builder /root/db/migrations ./db/migrations
+
 # Expose port 7777
 EXPOSE 7777
 
