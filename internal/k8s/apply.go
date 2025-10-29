@@ -41,13 +41,21 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		return nil, err
 	}
 
+	runSchema, err := constructMatchInfoJson(evt)
+	if err != nil {
+		log.Printf("Error constructing MatchInfoJson: %v", err)
+		return nil, err
+	}
+
 	data := templateData{
-		MatchId:          evt.MatchID,
-		GameMode:         evt.GameMode,
-		LobbyType:        evt.LobbyType,
-		Map:              evt.Map,
-		Region:           evt.Region,
-		RconPassword:     password,
+		MatchId:      evt.MatchID,
+		GameMode:     evt.GameMode,
+		LobbyType:    evt.LobbyType,
+		Map:          evt.Map,
+		Region:       evt.Region,
+		RconPassword: password,
+		MatchJson:    runSchema,
+
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,
 	}

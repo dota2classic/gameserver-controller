@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	//"time"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,27 +35,28 @@ func reconcileMatches() error {
 			continue
 		}
 
-		// Check Job status
-		switch {
-		case isJobPending(job) && mr.CreatedAt.Add(getExpirationTimeout()).Before(time.Now()):
-			log.Printf("Cancelling stale job %s", mr.JobName)
-			deleteJobAndResources(client, &mr)
-			emitNoFreeServer(&mr)
+		jobStatus := getJobStatus(context.Background(), client, job)
 
-		case isJobDone(job):
+		err = db.UpdateStatus(mr.MatchId, jobStatus)
+		if err != nil {
+			log.Printf("failed to update status for job %s: %v", mr.JobName, err)
+		}
+
+		switch jobStatus {
+		case db.StatusLaunching:
+			if mr.CreatedAt.Add(getExpirationTimeout()).Before(time.Now()) {
+				log.Printf("Cancelling stale job %s", mr.JobName)
+				deleteJobAndResources(client, &mr)
+				emitNoFreeServer(&mr)
+			}
+		case db.StatusDone:
 			log.Printf("Job %s done, cleaning up resources", mr.JobName)
 			deleteJobAndResources(client, &mr)
-
-		default:
-			// update db status
-			status := getStatusFromJob(job)
-			if status != mr.Status {
-				err = db.UpdateStatus(mr.MatchId, status)
-				if err != nil {
-					log.Printf("Failed to update status for %d: %v", mr.MatchId, err)
-				}
-			}
+		case db.StatusRunning:
+			log.Printf("Job %s is running", mr.JobName)
 		}
+
+		//Check Job status
 	}
 
 	return nil
