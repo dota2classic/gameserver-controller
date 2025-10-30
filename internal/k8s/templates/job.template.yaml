@@ -39,6 +39,8 @@ spec:
               value: "{{ .LobbyType }}"
             - name: GAME_MODE
               value: "{{ .GameMode }}"
+            - name: HOST_PORT
+              value: "{{ .HostGamePort  }}"
 
           envFrom:
             - secretRef:
