@@ -34,6 +34,8 @@ github.com/dota2classic/d2c-go-models v0.0.0-20251029224927-d6495715598b h1:wyP9
 github.com/dota2classic/d2c-go-models v0.0.0-20251029224927-d6495715598b/go.mod h1:NZGnsPcpDA66TfIImXWG5iKHDb3/RK+0X4B2mSbjXQc=
 github.com/dota2classic/d2c-go-models v0.0.0-20251030064246-0540fdc368f7 h1:lZmVZSxkmYjzInROTG1dIsDXrStQnwrhKGqfyZA8Gq4=
 github.com/dota2classic/d2c-go-models v0.0.0-20251030064246-0540fdc368f7/go.mod h1:NZGnsPcpDA66TfIImXWG5iKHDb3/RK+0X4B2mSbjXQc=
+github.com/dota2classic/d2c-go-models v0.0.0-20251030100810-4124ea3957d9 h1:P1Wg35NcblpY0/Z+gkvhO4ZOrL3HVH8qqfMU8B7G7LA=
+github.com/dota2classic/d2c-go-models v0.0.0-20251030100810-4124ea3957d9/go.mod h1:NZGnsPcpDA66TfIImXWG5iKHDb3/RK+0X4B2mSbjXQc=
 github.com/emicklei/go-restful/v3 v3.12.2 h1:DhwDP0vY3k8ZzE0RunuJy8GhNpPL6zqLkDf9B/a0/xU=
 github.com/emicklei/go-restful/v3 v3.12.2/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=

@@ -20,5 +20,20 @@ func CronMatchResourceStatus() {
 			}
 		}
 	}
+}
 
+func CronServerHeartbeats() {
+	interval := time.Second * 5
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := checkHeartbeats()
+			if err != nil {
+				log.Printf("Check heartbeats error: %v", err)
+			}
+		}
+	}
 }

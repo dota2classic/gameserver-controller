@@ -29,6 +29,7 @@ func main() {
 	redis.InitRedisClient()
 
 	go monitor.CronMatchResourceStatus()
+	go monitor.CronServerHeartbeats()
 
 	health := monitoring.NewHealthServer(redis.Client, rabbit.Instance.Conn)
 	log.Println("Starting server")
