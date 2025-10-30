@@ -41,6 +41,8 @@ spec:
               value: "{{ .GameMode }}"
             - name: HOST_PORT
               value: "{{ .HostGamePort  }}"
+            - name: HOST_TV_PORT
+              value: "{{ .HostSourceTVPort  }}"
 
           envFrom:
             - secretRef:
