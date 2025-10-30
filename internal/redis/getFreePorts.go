@@ -1,8 +1,8 @@
 package redis
 
 const (
-	BasePort = 30500
-	MaxPort  = 35000
+	BasePort = 27015
+	MaxPort  = 29000
 	KeyName  = "gameserver_port_counter"
 )
 
