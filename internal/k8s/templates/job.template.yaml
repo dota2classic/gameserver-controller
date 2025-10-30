@@ -92,7 +92,7 @@ spec:
             - name: MASTER_SERVER
               value: "http://localhost:7777" # Sidecar
             - name: LOGFILE_NAME
-              value: "match_{{ .MatchId }}.log"
+              value: "{{ .MatchId }}.log"
             - name: GAME_PORT
               value: "{{ .HostGamePort }}"
             - name: TV_PORT
