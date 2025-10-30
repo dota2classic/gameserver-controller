@@ -34,6 +34,9 @@ type templateData struct {
 	RconPassword string
 	MatchJson    string
 
+	TickRate   int
+	ConfigName string
+
 	HostGamePort     int
 	HostSourceTVPort int
 }

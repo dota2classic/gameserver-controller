@@ -97,6 +97,10 @@ spec:
               value: "{{ .HostGamePort }}"
             - name: TV_PORT
               value: "{{ .HostSourceTVPort }}"
+            - name: TICKRATE
+              value: "{{ .TickRate }}"
+            - name: ADDITIONAL_CFG
+              value: "{{ .ConfigName }}"
 
             - name: NET_PUBLIC_ADDR
               valueFrom:

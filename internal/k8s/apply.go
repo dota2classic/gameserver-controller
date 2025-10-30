@@ -47,6 +47,14 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		return nil, err
 	}
 
+	priorityLobby := evt.LobbyType == models.MATCHMAKING_MODE_LOBBY || evt.LobbyType == models.MATCHMAKING_MODE_UNRANKED
+	tickrate := 30
+	cfgName := "server.cfg"
+	if priorityLobby {
+		tickrate = 40
+		cfgName = "tickrate128.cfg"
+	}
+
 	data := templateData{
 		MatchId:      evt.MatchID,
 		GameMode:     evt.GameMode,
@@ -55,6 +63,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		Region:       evt.Region,
 		RconPassword: password,
 		MatchJson:    runSchema,
+		TickRate:     tickrate,
+		ConfigName:   cfgName,
 
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,
