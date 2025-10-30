@@ -57,22 +57,22 @@ spec:
           ports:
             # 27015 TCP
             - name: tcp-27015
-              containerPort: 27015
+              containerPort: {{ .HostGamePort }}
               protocol: TCP
               hostPort: {{ .HostGamePort }}
             # 27015 UDP
             - name: udp-27015
-              containerPort: 27015
+              containerPort: {{ .HostGamePort }}
               protocol: UDP
               hostPort: {{ .HostGamePort }}
             # 27020 TCP
             - name: tcp-27020
-              containerPort: 27020
+              containerPort: {{ .HostSourceTVPort }}
               protocol: TCP
               hostPort: {{ .HostSourceTVPort }}
             # 27020 UDP
             - name: udp-27020
-              containerPort: 27020
+              containerPort: {{ .HostSourceTVPort }}
               protocol: UDP
               hostPort: {{ .HostSourceTVPort }}
           volumeMounts:
