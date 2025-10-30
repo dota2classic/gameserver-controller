@@ -16,6 +16,10 @@ var (
 	clientInit sync.Once
 )
 
+const (
+	Namespace = "gameservers"
+)
+
 // GetClient lazily initializes it on first use.
 func GetClient() *kubernetes.Clientset {
 	clientInit.Do(func() {

@@ -3,6 +3,7 @@ package monitor
 import (
 	"context"
 	"d2c-gs-controller/internal/db"
+	"d2c-gs-controller/internal/k8s"
 	"d2c-gs-controller/internal/util"
 	"fmt"
 	"log"
@@ -77,33 +78,21 @@ func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv
 	return db.StatusLaunching
 }
 
-func getStatusFromJob(job *batchv1.Job) db.Status {
-	for _, c := range job.Status.Conditions {
-		if c.Type == batchv1.JobComplete && c.Status == corev1.ConditionTrue {
-			return db.StatusDone
-		}
-		if c.Type == batchv1.JobFailed && c.Status == corev1.ConditionTrue {
-			return db.StatusFailed
-		}
-	}
-	return db.StatusRunning
-}
-
 func deleteJobAndResources(client *kubernetes.Clientset, mr *db.MatchResources) {
 	ctx := context.Background()
 
 	deletePolicy := metav1.DeletePropagationBackground
 
 	// delete Job
-	_ = client.BatchV1().Jobs("default").Delete(ctx, mr.JobName, metav1.DeleteOptions{
+	_ = client.BatchV1().Jobs(k8s.Namespace).Delete(ctx, mr.JobName, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 
 	// delete ConfigMap
-	_ = client.CoreV1().ConfigMaps("default").Delete(ctx, mr.ConfigMapName, metav1.DeleteOptions{})
+	_ = client.CoreV1().ConfigMaps(k8s.Namespace).Delete(ctx, mr.ConfigMapName, metav1.DeleteOptions{})
 
 	// delete Secret
-	_ = client.CoreV1().Secrets("default").Delete(ctx, mr.SecretName, metav1.DeleteOptions{})
+	_ = client.CoreV1().Secrets(k8s.Namespace).Delete(ctx, mr.SecretName, metav1.DeleteOptions{})
 
 	// delete DB row
 	db.DeleteMatchResources(mr.MatchId)

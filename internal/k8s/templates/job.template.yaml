@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: gameserver-job-{{ .MatchId }}
+  namespace: gameservers
   labels:
     app-type: gameserver
 spec:
@@ -48,7 +49,7 @@ spec:
 
           envFrom:
             - secretRef:
-                name: shared-secrets # Global cluster secrets
+                name: shared-gameserver-secrets # Global cluster secrets
             - secretRef:
                 name: gameserver-secrets-{{ .MatchId }}  # Match specific secrets
 

@@ -27,7 +27,7 @@ func reconcileMatches() error {
 
 	for _, mr := range matchResources {
 		// Query job from Kubernetes
-		job, err := client.BatchV1().Jobs("default").Get(context.Background(), mr.JobName, metav1.GetOptions{})
+		job, err := client.BatchV1().Jobs(k8s.Namespace).Get(context.Background(), mr.JobName, metav1.GetOptions{})
 		if err != nil {
 			if errors.IsNotFound(err) {
 				// Job does not exist anymore → cleanup

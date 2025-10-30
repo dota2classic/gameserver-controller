@@ -70,22 +70,20 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		HostSourceTVPort: tvPort,
 	}
 
-	namespace := "default"
-
 	// --- 1. CONFIGMAP ---
-	configMap, err := ensureConfigMap(ctx, clientset, namespace, &data)
+	configMap, err := ensureConfigMap(ctx, clientset, Namespace, &data)
 	if err != nil {
 		return nil, err
 	}
 
 	// --- 2. SECRET ---
-	secret, err := ensureSecret(ctx, clientset, namespace, &data)
+	secret, err := ensureSecret(ctx, clientset, Namespace, &data)
 	if err != nil {
 		return nil, err
 	}
 
 	// --- 3. JOB ---
-	job, err := createJob(ctx, clientset, namespace, &data)
+	job, err := createJob(ctx, clientset, Namespace, &data)
 	if err != nil {
 		return nil, err
 	}
