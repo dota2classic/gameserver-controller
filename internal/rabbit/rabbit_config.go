@@ -22,6 +22,10 @@ func NewRabbit(amqpURL string) *Rabbit {
 
 var Instance *Rabbit
 
+const (
+	Exchange = "app.events"
+)
+
 // Connect establishes the connection with auto-reconnect
 func (r *Rabbit) Connect() error {
 	for {

@@ -1,9 +1,8 @@
 package rabbit
 
 import (
-	"context"
-	"d2c-gs-controller/internal/db"
 	"d2c-gs-controller/internal/k8s"
+	"d2c-gs-controller/internal/rabbit/queues"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/dota2classic/d2c-go-models/models"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var regions = []models.Region{
@@ -23,15 +21,22 @@ var regions = []models.Region{
 func (r *Rabbit) initConsumers() {
 	// Start multiple consumers
 	for _, region := range regions {
-		queue := fmt.Sprintf("d2c-gs-controller.LaunchGameServerCommand.%s", region)
 		key := fmt.Sprintf("LaunchGameServerCommand.%s", region)
 
-		r.startConsuming(queue, "app.events", key, func(msg []byte) error {
+		r.startConsuming(fmt.Sprintf("d2c-gs-controller.LaunchGameServerCommand.%s", region), Exchange, key, func(msg []byte) error {
 			var event models.LaunchGameServerCommand
 			if err := json.Unmarshal(msg, &event); err != nil {
 				return err
 			}
-			return handleLaunchGameServerCommand(&event)
+			return queues.HandleLaunchGameServerCommand(&event)
+		})
+
+		r.startConsuming("d2c-gs-controller.KillServerRequestedEvent", Exchange, "KillServerRequestedEvent", func(msg []byte) error {
+			var event models.KillServerRequestedEvent
+			if err := json.Unmarshal(msg, &event); err != nil {
+				return err
+			}
+			return queues.HandleKillServer(&event)
 		})
 	}
 }
@@ -84,53 +89,4 @@ func (r *Rabbit) startConsuming(queue, exchange, key string, handler func(msg []
 			time.Sleep(2 * time.Second)
 		}
 	}()
-}
-
-func handleMessage[T any](msg *amqp.Delivery, handler func(event *T) error) {
-	var event T
-	err := json.Unmarshal(msg.Body, &event)
-	if err != nil {
-		log.Printf("Failed to unmarshal message, nacking: %v", err)
-		err := msg.Nack(false, false)
-		if err != nil {
-			log.Fatalf("Failed to nack message %v", err)
-		}
-	}
-
-	err = handler(&event)
-
-	if err != nil {
-		log.Printf("Failed to process message: %v", err)
-		err = msg.Nack(false, true)
-		if err != nil {
-			log.Fatalf("Failed to nack message %v", err)
-		}
-	} else {
-		err = msg.Ack(false)
-		if err != nil {
-			log.Fatalf("Failed to ack message %v", err)
-		}
-	}
-
-}
-
-func handleLaunchGameServerCommand(event *models.LaunchGameServerCommand) error {
-	log.Printf("Launching game server for matchId %d", event.MatchID)
-	mr, err := k8s.DeployMatchResources(context.Background(), k8s.GetClient(), event)
-	if err != nil {
-		log.Printf("Failed to deploy match: %v", err)
-		return err
-	}
-	log.Printf("Match %d successfully deployed", event.MatchID)
-	err = db.InsertMatchResources(db.MatchResources{
-		MatchId:       event.MatchID,
-		JobName:       mr.JobName,
-		SecretName:    mr.SecretName,
-		ConfigMapName: mr.ConfigMapName,
-	})
-	if err != nil {
-		log.Printf("Failed to insert match: %v", err)
-		return err
-	}
-	return nil
 }

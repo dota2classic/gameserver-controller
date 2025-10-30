@@ -91,6 +91,10 @@ spec:
               value: "http://localhost:7777" # Sidecar
             - name: LOGFILE_NAME
               value: "match_{{ .MatchId }}.log"
+            - name: GAME_PORT
+              value: "{{ .HostGamePort }}"
+            - name: TV_PORT
+              value: "{{ .HostSourceTVPort }}"
             - name: RCON_PASSWORD
               valueFrom:
                 secretKeyRef:
