@@ -97,6 +97,11 @@ spec:
               value: "{{ .HostGamePort }}"
             - name: TV_PORT
               value: "{{ .HostSourceTVPort }}"
+
+            - name: NET_PUBLIC_ADDR
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: RCON_PASSWORD
               valueFrom:
                 secretKeyRef:
