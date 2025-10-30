@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: gameserver-job-{{ .MatchId }}
+  labels:
+    app-type: gameserver
 spec:
   ttlSecondsAfterFinished: 60
   backoffLimit: 0
