@@ -67,9 +67,9 @@ spec:
         - name: gameserver
           resources:
             requests:
-              cpu: "950m"
+              cpu: "1"
             limits:
-              cpu: "950m"
+              cpu: "1"
           imagePullPolicy: Always
           image: dota2classic/srcds:d684_dev-k8s-latest
           ports:
