@@ -120,6 +120,11 @@ spec:
                   name: gameserver-secrets-{{ .MatchId }}
                   key: RCON_PASSWORD
 
+      resources:
+        requests:
+          cpu: "950m"
+        limits:
+          cpu: "1"
 
       volumes:
         - name: match-cfg
