@@ -51,8 +51,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	tickrate := 30
 	cfgName := "server.cfg"
 	if priorityLobby {
-		tickrate = 40
-		cfgName = "tickrate128.cfg"
+		tickrate = 60
+		//cfgName = "tickrate128.cfg"
 	}
 
 	data := templateData{
