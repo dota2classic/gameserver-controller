@@ -21,6 +21,11 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: sidecar
+          resources:
+            requests:
+              cpu: "5m"
+            limits:
+              cpu: "15m"
           imagePullPolicy: Always
           image: dota2classic/srcds-sidecar:k8s-latest
           ports:
@@ -60,6 +65,11 @@ spec:
 
 
         - name: gameserver
+          resources:
+            requests:
+              cpu: "940m"
+            limits:
+              cpu: "940m"
           imagePullPolicy: Always
           image: dota2classic/srcds:d684_dev-k8s-latest
           ports:
@@ -119,12 +129,6 @@ spec:
                 secretKeyRef:
                   name: gameserver-secrets-{{ .MatchId }}
                   key: RCON_PASSWORD
-
-      resources:
-        requests:
-          cpu: "950m"
-        limits:
-          cpu: "1"
 
       volumes:
         - name: match-cfg
