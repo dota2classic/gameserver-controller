@@ -12,8 +12,13 @@ spec:
     spec:
       restartPolicy: Never  # don't restart Pod
       nodeSelector:
-        gs-node: "true"
+        node-type: "gameserver"
         region: "{{ .Region }}"
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "gameserver"
+          effect: "NoSchedule"
       containers:
         - name: sidecar
           imagePullPolicy: Always

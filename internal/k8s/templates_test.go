@@ -72,8 +72,8 @@ func TestCreateJob(t *testing.T) {
 		t.Errorf("Region mismatch")
 	}
 
-	if job.Spec.Template.Spec.NodeSelector["gs-node"] != "true" {
-		t.Errorf("gs-node selector != true")
+	if job.Spec.Template.Spec.NodeSelector["node-type"] != "gameserver" {
+		t.Errorf("node type != gameserver != true")
 	}
 
 	sidecar := &job.Spec.Template.Spec.Containers[0]
