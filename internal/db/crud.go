@@ -2,6 +2,8 @@ package db
 
 import (
 	"log"
+
+	"github.com/dota2classic/d2c-go-models/models"
 )
 
 func InsertMatchResources(mr MatchResources) error {
@@ -67,4 +69,14 @@ func DeleteMatchResources(matchId int64) {
 		log.Printf("Failed to delete resources: %v", err)
 	}
 	defer rows.Close()
+}
+
+func GetSettingsForMode(mode models.MatchmakingMode) (*GameServerSettings, error) {
+	db := ConnectAndMigrate()
+	row := db.QueryRow(`SELECT matchmaking_mode, tickrate FROM gameserver_settings WHERE matchmaking_mode=$1`, mode)
+	var gss GameServerSettings
+	if err := row.Scan(&gss.MatchmakingMode, &gss.TickRate); err != nil {
+		return nil, err
+	}
+	return &gss, nil
 }

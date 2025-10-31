@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"d2c-gs-controller/internal/db"
 	"d2c-gs-controller/internal/redis"
 	"d2c-gs-controller/internal/util"
 	"errors"
@@ -47,12 +48,15 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		return nil, err
 	}
 
-	priorityLobby := evt.LobbyType == models.MATCHMAKING_MODE_LOBBY || evt.LobbyType == models.MATCHMAKING_MODE_UNRANKED
-	tickrate := 30
+	//priorityLobby := evt.LobbyType == models.MATCHMAKING_MODE_LOBBY || evt.LobbyType == models.MATCHMAKING_MODE_UNRANKED
 	cfgName := "server.cfg"
-	if priorityLobby {
-		tickrate = 60
-		//cfgName = "tickrate128.cfg"
+
+	tickrate := 30
+	gameServerSettings, err := db.GetSettingsForMode(evt.LobbyType)
+	if err != nil {
+		log.Printf("Error getting gameserver settings for mode %d: %v", evt.LobbyType, err)
+	} else {
+		tickrate = gameServerSettings.TickRate
 	}
 
 	data := templateData{

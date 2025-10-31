@@ -41,3 +41,8 @@ type MatchResources struct {
 	CreatedAt     time.Time
 	Status        Status
 }
+
+type GameServerSettings struct {
+	MatchmakingMode int64
+	TickRate        int
+}
