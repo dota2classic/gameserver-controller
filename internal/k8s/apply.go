@@ -53,10 +53,17 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 	tickrate := 30
 	gameServerSettings, err := db.GetSettingsForMode(evt.LobbyType)
+
 	if err != nil {
 		log.Printf("Error getting gameserver settings for mode %d: %v", evt.LobbyType, err)
 	} else {
 		tickrate = gameServerSettings.TickRate
+	}
+
+	jobTemplate := CpuAffinityJobTemplate
+
+	if tickrate == 30 {
+		jobTemplate = RegularJobTemplate // If tickrate is 30, we're falling back to non-pinned job
 	}
 
 	data := templateData{
@@ -87,7 +94,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	}
 
 	// --- 3. JOB ---
-	job, err := createJob(ctx, clientset, Namespace, &data)
+	job, err := createJob(ctx, clientset, Namespace, jobTemplate, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +141,14 @@ func ensureSecret(ctx context.Context, clientset *kubernetes.Clientset, namespac
 	return secret, nil
 }
 
-func createJob(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*batchv1.Job, error) {
-	job, err := createConfiguration[batchv1.Job](CpuAffinityJobTemplate, data)
+func createJob(
+	ctx context.Context,
+	clientset *kubernetes.Clientset,
+	namespace string,
+	template string,
+	data *templateData,
+) (*batchv1.Job, error) {
+	job, err := createConfiguration[batchv1.Job](template, data)
 	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 
 	if err != nil {
