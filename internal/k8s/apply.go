@@ -135,7 +135,7 @@ func ensureSecret(ctx context.Context, clientset *kubernetes.Clientset, namespac
 }
 
 func createJob(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*batchv1.Job, error) {
-	job, err := createConfiguration[batchv1.Job](JobTemplate, data)
+	job, err := createConfiguration[batchv1.Job](CpuAffinityJobTemplate, data)
 	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 
 	if err != nil {

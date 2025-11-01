@@ -16,8 +16,11 @@ var SecretTemplate string
 //go:embed templates/configmap.template.yaml
 var ConfigmapTemplate string
 
-//go:embed templates/job.template.yaml
-var JobTemplate string
+//go:embed templates/cpu-affinity-job.template.yaml
+var CpuAffinityJobTemplate string
+
+//go:embed templates/regular-job.template.yaml
+var RegularJobTemplate string
 
 //const (
 //	SECRET_TEMPLATE    = "./templates/secret.template.yaml"

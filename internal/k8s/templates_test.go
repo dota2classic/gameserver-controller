@@ -56,9 +56,9 @@ func TestCreateSecret(t *testing.T) {
 	}
 }
 
-func TestCreateJob(t *testing.T) {
-	job, err := createConfiguration[batchv1.Job](JobTemplate, &data)
-	jobName := fmt.Sprintf("gameserver-job-%d", data.MatchId)
+func TestCreateCpuAffinityJob(t *testing.T) {
+	job, err := createConfiguration[batchv1.Job](CpuAffinityJobTemplate, &data)
+	jobName := fmt.Sprintf("gameserver-cpu-affinity-job-%d", data.MatchId)
 
 	if err != nil {
 		t.Errorf("Error creating job: %v", err)
@@ -76,16 +76,56 @@ func TestCreateJob(t *testing.T) {
 		t.Errorf("node type != gameserver != true")
 	}
 
+	// Check sidecar envs
 	sidecar := &job.Spec.Template.Spec.Containers[0]
-
 	checkEnvVar(t, sidecar, "LOBBY_TYPE", strconv.FormatInt(int64(data.LobbyType), 10))
 	checkEnvVar(t, sidecar, "GAME_MODE", strconv.FormatInt(int64(data.GameMode), 10))
 	checkEnvVar(t, sidecar, "MATCH_ID", strconv.FormatInt(data.MatchId, 10))
+	assertQosGuaranteed(t, sidecar, true)
 
+	// Check GS envs
 	gameserver := &job.Spec.Template.Spec.Containers[1]
 	checkEnvVar(t, gameserver, "MAP", string(data.Map))
 	checkEnvVar(t, gameserver, "GAMEMODE", strconv.FormatInt(int64(data.GameMode), 10))
+	// We need cpu affinity and QoS = guaranteed here
+	assertQosGuaranteed(t, gameserver, true)
+	assertCpuAffinity(t, gameserver, true)
+}
 
+func TestCreateRegularJob(t *testing.T) {
+	job, err := createConfiguration[batchv1.Job](RegularJobTemplate, &data)
+	jobName := fmt.Sprintf("gameserver-regular-job-%d", data.MatchId)
+
+	if err != nil {
+		t.Errorf("Error creating job: %v", err)
+	}
+
+	if job.Name != jobName {
+		t.Errorf("Resource name mismatch. Expected %s, got %s", jobName, job.Name)
+	}
+
+	if job.Spec.Template.Spec.NodeSelector["region"] != string(data.Region) {
+		t.Errorf("Region mismatch")
+	}
+
+	if job.Spec.Template.Spec.NodeSelector["node-type"] != "gameserver" {
+		t.Errorf("node type != gameserver != true")
+	}
+
+	// Check sidecar envs
+	sidecar := &job.Spec.Template.Spec.Containers[0]
+	checkEnvVar(t, sidecar, "LOBBY_TYPE", strconv.FormatInt(int64(data.LobbyType), 10))
+	checkEnvVar(t, sidecar, "GAME_MODE", strconv.FormatInt(int64(data.GameMode), 10))
+	checkEnvVar(t, sidecar, "MATCH_ID", strconv.FormatInt(data.MatchId, 10))
+	assertQosGuaranteed(t, sidecar, false)
+
+	// Check GS envs
+	gameserver := &job.Spec.Template.Spec.Containers[1]
+	checkEnvVar(t, gameserver, "MAP", string(data.Map))
+	checkEnvVar(t, gameserver, "GAMEMODE", strconv.FormatInt(int64(data.GameMode), 10))
+	// We don't need cpu affinity and QoS = guaranteed here
+	assertQosGuaranteed(t, gameserver, false)
+	assertCpuAffinity(t, gameserver, false)
 }
 
 func jsonEqual(a, b string) bool {
@@ -112,4 +152,31 @@ func checkEnvVar(t *testing.T, container *corev1.Container, name string, value s
 		}
 	}
 	t.Errorf("Env var %s not found in container %s", name, container.Name)
+}
+
+func assertQosGuaranteed(t *testing.T, container *corev1.Container, expectTrue bool) {
+	cpuEqual := container.Resources.Requests.Cpu().MilliValue() == container.Resources.Limits.Cpu().MilliValue()
+	memEqual := container.Resources.Requests.Memory().MilliValue() == container.Resources.Limits.Memory().MilliValue()
+	isGuaranteed := cpuEqual && memEqual
+
+	if expectTrue && !isGuaranteed {
+		t.Errorf("Expected container to be QoS=Guaranteed, but cpu or memory request != limit")
+	}
+
+	if !expectTrue && isGuaranteed {
+		t.Errorf("Expected container NOT to be QoS=Guaranteed, but cpu and memory requests equal limits")
+	}
+}
+
+func assertCpuAffinity(t *testing.T, container *corev1.Container, expectTrue bool) {
+	cpuMilli := container.Resources.Requests.Cpu().MilliValue()
+	hasAffinity := cpuMilli%1000 == 0
+
+	if expectTrue && !hasAffinity {
+		t.Errorf("Expected container to have CPU affinity, but cpu request is non-integer: %dm", cpuMilli)
+	}
+
+	if !expectTrue && hasAffinity {
+		t.Errorf("Expected container NOT to have CPU affinity, but cpu request is integer: %dm", cpuMilli)
+	}
 }
