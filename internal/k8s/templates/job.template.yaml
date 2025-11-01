@@ -24,8 +24,10 @@ spec:
           resources:
             requests:
               cpu: "10m"
+              memory: "30Mi"
             limits:
               cpu: "10m"
+              memory: "30Mi"
           imagePullPolicy: Always
           image: dota2classic/srcds-sidecar:k8s-latest
           ports:
@@ -68,8 +70,10 @@ spec:
           resources:
             requests:
               cpu: "1"
+              memory: "500Mi"
             limits:
               cpu: "1"
+              memory: "500Mi"
           imagePullPolicy: Always
           image: dota2classic/srcds:d684_dev-k8s-latest
           ports:
