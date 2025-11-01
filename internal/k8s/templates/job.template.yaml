@@ -21,11 +21,11 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: sidecar
-#          resources:
-#            requests:
-#              cpu: "5m"
-#            limits:
-#              cpu: "15m"
+          resources:
+            requests:
+              cpu: "10m"
+            limits:
+              cpu: "10m"
           imagePullPolicy: Always
           image: dota2classic/srcds-sidecar:k8s-latest
           ports:
