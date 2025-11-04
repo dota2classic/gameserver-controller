@@ -73,6 +73,10 @@ spec:
               value: "{{ .HostGamePort  }}"
             - name: HOST_TV_PORT
               value: "{{ .HostSourceTVPort  }}"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
 
           envFrom:
             - secretRef:
