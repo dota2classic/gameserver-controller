@@ -12,8 +12,9 @@ spec:
     spec:
       restartPolicy: Never  # don't restart Pod
       nodeSelector:
-        node-type: "gameserver"
-        region: "{{ .Region }}"
+        ru.dotaclassic/nodeType: "gameserver"
+        ru.dotaclassic/cpuAffinity: "true"
+        ru.dotaclassic/region: "{{ .Region }}"
       tolerations:
         - key: "dedicated"
           operator: "Equal"

@@ -12,8 +12,27 @@ spec:
     spec:
       restartPolicy: Never  # don't restart Pod
       nodeSelector:
-        node-type: "gameserver"
-        region: "{{ .Region }}"
+        # REQUIRED (must be on gameserver nodes)
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: dotaclassic.io/nodeType
+                  operator: In
+                  values:
+                    - gameserver
+                - key: ru.dotaclassic/region
+                  operator: In
+                  values:
+                    - "{{ .Region }}"
+      # PREFERRED (prefer cpuAffinity=false)
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: dotaclassic.io/cpuAffinity
+                operator: In
+                values:
+                  - "false"
       tolerations:
         - key: "dedicated"
           operator: "Equal"
