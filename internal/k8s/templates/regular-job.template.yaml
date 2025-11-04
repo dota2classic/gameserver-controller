@@ -10,6 +10,7 @@ spec:
   backoffLimit: 0
   template:
     spec:
+      restartPolicy: Never  # don't restart Pod
       affinity:
         nodeAffinity:
           # REQUIRED (must be on gameserver nodes)

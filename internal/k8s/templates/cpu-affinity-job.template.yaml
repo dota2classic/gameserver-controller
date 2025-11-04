@@ -10,6 +10,7 @@ spec:
   backoffLimit: 0
   template:
     spec:
+      restartPolicy: Never  # don't restart Pod
       affinity:
         nodeAffinity:
           # REQUIRED (must be on gameserver nodes)
@@ -33,7 +34,6 @@ spec:
                     operator: In
                     values:
                       - "true"
-      restartPolicy: Never  # don't restart Pod
       containers:
         - name: sidecar
           resources:
