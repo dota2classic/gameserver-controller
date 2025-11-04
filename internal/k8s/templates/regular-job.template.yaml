@@ -10,34 +10,29 @@ spec:
   backoffLimit: 0
   template:
     spec:
-      restartPolicy: Never  # don't restart Pod
-      nodeSelector:
-        # REQUIRED (must be on gameserver nodes)
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: dotaclassic.io/nodeType
-                  operator: In
-                  values:
-                    - gameserver
-                - key: ru.dotaclassic/region
-                  operator: In
-                  values:
-                    - "{{ .Region }}"
-      # PREFERRED (prefer cpuAffinity=false)
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-              - key: dotaclassic.io/cpuAffinity
-                operator: In
-                values:
-                  - "false"
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "gameserver"
-          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          # REQUIRED (must be on gameserver nodes)
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: ru.dotaclassic/nodeType
+                    operator: In
+                    values:
+                      - gameserver
+                  - key: ru.dotaclassic/region
+                    operator: In
+                    values:
+                      - "{{ .Region }}"
+          # PREFERRED (prefer cpuAffinity=false)
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: dotaclassic.io/cpuAffinity
+                    operator: In
+                    values:
+                      - "false"
       containers:
         - name: sidecar
           resources:

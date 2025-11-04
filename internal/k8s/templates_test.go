@@ -68,13 +68,16 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 		t.Errorf("Resource name mismatch. Expected %s, got %s", jobName, job.Name)
 	}
 
-	if job.Spec.Template.Spec.NodeSelector["region"] != string(data.Region) {
-		t.Errorf("Region mismatch")
-	}
-
-	if job.Spec.Template.Spec.NodeSelector["node-type"] != "gameserver" {
-		t.Errorf("node type != gameserver != true")
-	}
+	// Should only run on gameserver nodes with selected region
+	// Should prefer cpuAffinity nodes
+	assertNodeAffinity(t, job.Spec.Template.Spec.Affinity,
+		map[string][]string{
+			"ru.dotaclassic/nodeType": {"gameserver"},
+			"ru.dotaclassic/region":   {string(data.Region)},
+		},
+		map[string][]string{
+			"dotaclassic.io/cpuAffinity": {"true"},
+		})
 
 	// Check sidecar envs
 	sidecar := &job.Spec.Template.Spec.Containers[0]
@@ -104,13 +107,16 @@ func TestCreateRegularJob(t *testing.T) {
 		t.Errorf("Resource name mismatch. Expected %s, got %s", jobName, job.Name)
 	}
 
-	if job.Spec.Template.Spec.NodeSelector["region"] != string(data.Region) {
-		t.Errorf("Region mismatch")
-	}
-
-	if job.Spec.Template.Spec.NodeSelector["node-type"] != "gameserver" {
-		t.Errorf("node type != gameserver != true")
-	}
+	// Should only run on gameserver nodes with selected region
+	// Should prefer non-cpuAffinity nodes
+	assertNodeAffinity(t, job.Spec.Template.Spec.Affinity,
+		map[string][]string{
+			"ru.dotaclassic/nodeType": {"gameserver"},
+			"ru.dotaclassic/region":   {string(data.Region)},
+		},
+		map[string][]string{
+			"dotaclassic.io/cpuAffinity": {"false"},
+		})
 
 	// Check sidecar envs
 	sidecar := &job.Spec.Template.Spec.Containers[0]
@@ -179,4 +185,68 @@ func assertCpuAffinity(t *testing.T, container *corev1.Container, expectTrue boo
 	if !expectTrue && hasAffinity {
 		t.Errorf("Expected container NOT to have CPU affinity, but cpu request is integer: %dm", cpuMilli)
 	}
+}
+
+func assertNodeAffinity(t *testing.T, affinity *corev1.Affinity, expectedRequired map[string][]string, expectedPreferred map[string][]string) {
+	t.Helper()
+
+	if affinity == nil || affinity.NodeAffinity == nil {
+		t.Fatalf("NodeAffinity is missing")
+	}
+
+	// --- Required checks ---
+	required := affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution
+	if required == nil {
+		t.Fatalf("RequiredDuringSchedulingIgnoredDuringExecution is missing")
+	}
+
+	// Track which required keys we saw
+	seenRequired := map[string]bool{}
+	for _, term := range required.NodeSelectorTerms {
+		for _, expr := range term.MatchExpressions {
+			if wantVals, ok := expectedRequired[expr.Key]; ok {
+				if expr.Operator != corev1.NodeSelectorOpIn {
+					t.Errorf("required key %s: operator = %s, want In", expr.Key, expr.Operator)
+				}
+				for _, val := range wantVals {
+					if !contains(expr.Values, val) {
+						t.Errorf("required key %s: missing value %s", expr.Key, val)
+					}
+				}
+				seenRequired[expr.Key] = true
+			}
+		}
+	}
+	for key := range expectedRequired {
+		if !seenRequired[key] {
+			t.Errorf("required key %s missing in NodeAffinity", key)
+		}
+	}
+
+	// --- Preferred checks ---
+	preferred := affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution
+	for _, pref := range preferred {
+		for _, expr := range pref.Preference.MatchExpressions {
+			if wantVals, ok := expectedPreferred[expr.Key]; ok {
+				if expr.Operator != corev1.NodeSelectorOpIn {
+					t.Errorf("preferred key %s: operator = %s, want In", expr.Key, expr.Operator)
+				}
+				for _, val := range wantVals {
+					if !contains(expr.Values, val) {
+						t.Errorf("preferred key %s: missing value %s", expr.Key, val)
+					}
+				}
+			}
+		}
+	}
+}
+
+// helper for checking slice
+func contains(slice []string, val string) bool {
+	for _, v := range slice {
+		if v == val {
+			return true
+		}
+	}
+	return false
 }
