@@ -13,13 +13,14 @@ import (
 )
 
 var data = templateData{
-	MatchId:      123,
-	GameMode:     models.DOTA_GAME_MODE_ALLPICK,
-	LobbyType:    models.MATCHMAKING_MODE_LOBBY,
-	Map:          models.DOTA_MAP_DOTA,
-	Region:       models.REGION_RU_MOSCOW,
-	RconPassword: "12345",
-	MatchJson:    `{"key":"value"}`,
+	MatchId:         123,
+	GameMode:        models.DOTA_GAME_MODE_ALLPICK,
+	LobbyType:       models.MATCHMAKING_MODE_LOBBY,
+	Map:             models.DOTA_MAP_DOTA,
+	Region:          models.REGION_RU_MOSCOW,
+	RconPassword:    "12345",
+	MatchJson:       `{"key":"value"}`,
+	GameServerImage: "myimage123",
 }
 
 func TestCreateConfigmap(t *testing.T) {
@@ -93,6 +94,8 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 	// We need cpu affinity and QoS = guaranteed here
 	assertQosGuaranteed(t, gameserver, true)
 	assertCpuAffinity(t, gameserver, true)
+	// Check that image is ok
+	assertImage(t, gameserver, data.GameServerImage)
 }
 
 func TestCreateRegularJob(t *testing.T) {
@@ -132,6 +135,8 @@ func TestCreateRegularJob(t *testing.T) {
 	// We don't need cpu affinity and QoS = guaranteed here
 	assertQosGuaranteed(t, gameserver, false)
 	assertCpuAffinity(t, gameserver, false)
+	// Check that image is ok
+	assertImage(t, gameserver, data.GameServerImage)
 }
 
 func jsonEqual(a, b string) bool {
@@ -249,4 +254,10 @@ func contains(slice []string, val string) bool {
 		}
 	}
 	return false
+}
+
+func assertImage(t *testing.T, container *corev1.Container, image string) {
+	if container.Image != image {
+		t.Errorf("Container image mismatch. Expected %s, got %s", image, container.Image)
+	}
 }
