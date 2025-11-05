@@ -62,8 +62,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 	jobTemplate := CpuAffinityJobTemplate
 
-	if tickrate == 30 {
-		jobTemplate = RegularJobTemplate // If tickrate is 30, we're falling back to non-pinned job
+	if gameServerSettings.CpuAffinity {
+		jobTemplate = CpuAffinityJobTemplate
+	} else {
+		jobTemplate = RegularJobTemplate
 	}
 
 	data := templateData{
