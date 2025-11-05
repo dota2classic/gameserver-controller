@@ -77,6 +77,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		TickRate:     tickrate,
 		ConfigName:   cfgName,
 
+		GameServerImage: gameServerSettings.Image,
+
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,
 	}

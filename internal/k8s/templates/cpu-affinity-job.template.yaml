@@ -94,7 +94,7 @@ spec:
               cpu: "1"
               memory: "500Mi"
           imagePullPolicy: Always
-          image: dota2classic/srcds:d684_dev-k8s-latest
+          image: {{ .GameServerImage }}
           ports:
             # 27015 TCP
             - name: tcp-27015

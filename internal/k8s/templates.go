@@ -29,13 +29,14 @@ var RegularJobTemplate string
 //)
 
 type templateData struct {
-	MatchId      int64
-	GameMode     models.DotaGameMode
-	LobbyType    models.MatchmakingMode
-	Map          models.DotaMap
-	Region       models.Region
-	RconPassword string
-	MatchJson    string
+	MatchId         int64
+	GameMode        models.DotaGameMode
+	LobbyType       models.MatchmakingMode
+	Map             models.DotaMap
+	Region          models.Region
+	RconPassword    string
+	MatchJson       string
+	GameServerImage string
 
 	TickRate   int
 	ConfigName string

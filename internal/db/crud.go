@@ -73,9 +73,9 @@ func DeleteMatchResources(matchId int64) {
 
 func GetSettingsForMode(mode models.MatchmakingMode) (*GameServerSettings, error) {
 	db := ConnectAndMigrate()
-	row := db.QueryRow(`SELECT matchmaking_mode, tickrate FROM gameserver_settings WHERE matchmaking_mode=$1`, mode)
+	row := db.QueryRow(`SELECT matchmaking_mode, tickrate, image FROM gameserver_settings WHERE matchmaking_mode=$1`, mode)
 	var gss GameServerSettings
-	if err := row.Scan(&gss.MatchmakingMode, &gss.TickRate); err != nil {
+	if err := row.Scan(&gss.MatchmakingMode, &gss.TickRate, &gss.Image); err != nil {
 		return nil, err
 	}
 	return &gss, nil
