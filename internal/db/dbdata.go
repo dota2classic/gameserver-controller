@@ -10,10 +10,13 @@ import (
 type Status string
 
 const (
+	StatusPending   Status = "pending"
 	StatusLaunching Status = "launching"
 	StatusRunning   Status = "running"
-	StatusFailed    Status = "failed"
+	StatusFinishing Status = "finishing"
 	StatusDone      Status = "done"
+
+	StatusFailed Status = "failed"
 )
 
 func (s *Status) Scan(value interface{}) error {

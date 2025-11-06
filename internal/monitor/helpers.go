@@ -31,7 +31,7 @@ func isPodFullyRunning(pod *corev1.Pod) bool {
 }
 
 func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv1.Job) db.Status {
-	// 1. First check if it's done
+	// 1. Check job-level completion first
 	if job.Status.Succeeded > 0 {
 		return db.StatusDone
 	}
@@ -39,42 +39,68 @@ func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv
 		return db.StatusFailed
 	}
 
-	// 2. Then inspect pods for readiness
+	// 2. Check pods associated with this job
 	pods, err := client.CoreV1().Pods(job.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("job-name=%s", job.Name),
 	})
 	if err != nil {
 		log.Printf("Failed to list pods for job %s: %v", job.Name, err)
-		return db.StatusLaunching // safest fallback
+		return db.StatusLaunching
 	}
-
 	if len(pods.Items) == 0 {
-		return db.StatusLaunching // Job created, pods not yet started
+		return db.StatusPending
 	}
 
-	allRunningAndReady := true
 	for _, pod := range pods.Items {
 		switch pod.Status.Phase {
-		case corev1.PodPending, corev1.PodUnknown:
+		case corev1.PodPending:
+			// Not scheduled yet
+			if pod.Spec.NodeName == "" {
+				return db.StatusPending
+			}
+			// Scheduled but containers not yet launched
 			return db.StatusLaunching
+
 		case corev1.PodRunning:
+			// Inspect containers
+			sidecarAlive := false
+			mainAlive := false
+			allReady := true
+
 			for _, cs := range pod.Status.ContainerStatuses {
+				if cs.Name == "sidecar" && cs.Ready {
+					sidecarAlive = true
+				}
+				if cs.Name != "sidecar" && cs.Ready {
+					mainAlive = true
+				}
 				if !cs.Ready {
-					allRunningAndReady = false
-					break
+					allReady = false
 				}
 			}
-		case corev1.PodFailed:
-			return db.StatusFailed
+
+			// Finishing: only sidecar alive
+			if sidecarAlive && !mainAlive {
+				return db.StatusFinishing
+			}
+
+			// Running: both alive and ready
+			if sidecarAlive && mainAlive && allReady {
+				return db.StatusRunning
+			}
+
+			// Otherwise, launching (some containers not ready yet)
+			return db.StatusLaunching
+
 		case corev1.PodSucceeded:
 			return db.StatusDone
+
+		case corev1.PodFailed:
+			return db.StatusFailed
 		}
 	}
 
-	if allRunningAndReady {
-		return db.StatusRunning
-	}
-
+	// Default fallback
 	return db.StatusLaunching
 }
 
