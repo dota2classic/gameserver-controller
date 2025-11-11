@@ -104,6 +104,16 @@ func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv
 	return db.StatusLaunching
 }
 
+func KillServer(matchId int64) error {
+
+	mr, err := db.FindMatchResources(matchId)
+	if err != nil {
+		return err
+	}
+	deleteJobAndResources(k8s.GetClient(), mr)
+	return nil
+}
+
 func deleteJobAndResources(client *kubernetes.Clientset, mr *db.MatchResources) {
 	ctx := context.Background()
 

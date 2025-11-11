@@ -31,14 +31,6 @@ func (r *Rabbit) initConsumers() {
 			}
 			return queues.HandleLaunchGameServerCommand(&event)
 		})
-
-		r.startConsuming("d2c-gs-controller.KillServerRequestedEvent", Exchange, "KillServerRequestedEvent", 10, func(msg *amqp.Delivery) error {
-			var event models.KillServerRequestedEvent
-			if err := json.Unmarshal(msg.Body, &event); err != nil {
-				return err
-			}
-			return queues.HandleKillServer(&event)
-		})
 	}
 }
 

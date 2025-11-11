@@ -8,6 +8,7 @@ import (
 	"d2c-gs-controller/internal/redis"
 	"log"
 
+	"github.com/dota2classic/d2c-go-models/models"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +19,8 @@ What we need to do:
 - Update job statuses and emit events(ServerStatusEvent)
 */
 
+type void struct{}
+
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -27,6 +30,10 @@ func main() {
 	db.ConnectAndMigrate()
 	rabbit.InitRabbit()
 	redis.InitRedisClient()
+
+	redis.Subscribe("KillServerRequestedEvent", func(msg *models.KillServerRequestedEvent) (*void, error) {
+		return nil, monitor.KillServer(msg.MatchID)
+	})
 
 	go monitor.CronMatchResourceStatus()
 	go monitor.CronServerHeartbeats()
