@@ -31,7 +31,7 @@ func main() {
 	rabbit.InitRabbit()
 	redis.InitRedisClient()
 
-	redis.Subscribe("KillServerRequestedEvent", func(msg *models.KillServerRequestedEvent) (*void, error) {
+	go redis.Subscribe("KillServerRequestedEvent", func(msg *models.KillServerRequestedEvent) (*void, error) {
 		return nil, monitor.KillServer(msg.MatchID)
 	})
 
