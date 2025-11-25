@@ -32,7 +32,7 @@ func isPodFullyRunning(pod *corev1.Pod) bool {
 
 func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv1.Job) db.Status {
 	// 1. Check job-level completion first
-	if job.Status.Succeeded > 0 {
+	if job.Status.Succeeded == 2 {
 		return db.StatusDone
 	}
 	if job.Status.Failed > 0 {
@@ -101,7 +101,7 @@ func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv
 	}
 
 	// Default fallback
-	return db.StatusLaunching
+	return db.StatusPending
 }
 
 func KillServer(matchId int64) error {

@@ -62,10 +62,6 @@ func reconcileMatches() error {
 			deleteJobAndResources(client, &mr)
 		case db.StatusRunning:
 			log.Printf("Job %s is running", mr.JobName)
-
-			if err != nil {
-				log.Printf("Failed to publish status event for job %s: %v", mr.JobName, err)
-			}
 		}
 
 		// Check Job status
