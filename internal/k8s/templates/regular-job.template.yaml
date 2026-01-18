@@ -122,6 +122,9 @@ spec:
               mountPath: /root/dota/replays
             - name: dumps
               mountPath: /tmp/dumps
+            - name: dmi
+              mountPath: /sys/devices/virtual/dmi/id
+              readOnly: true
           env:
             - name: MAP
               value: "{{ .Map }}"
@@ -160,3 +163,9 @@ spec:
           emptyDir: {}
         - name: dumps
           emptyDir: {}
+
+        # DMI
+        - name: dmi
+          hostPath:
+            path: /sys/devices/virtual/dmi/id
+            type: Directory
