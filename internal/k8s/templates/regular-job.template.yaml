@@ -30,7 +30,7 @@ spec:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: ru.dotaclassic.io/cpuAffinity
+                  - key: ru.dotaclassic/cpuAffinity
                     operator: In
                     values:
                       - "false"
