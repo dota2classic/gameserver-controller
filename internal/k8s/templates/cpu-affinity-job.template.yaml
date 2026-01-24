@@ -25,12 +25,12 @@ spec:
                     operator: In
                     values:
                       - "{{ .Region }}"
-          # PREFERRED (prefer cpuAffinity=false)
+          # PREFERRED (prefer cpuAffinity=true)
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: dotaclassic.io/cpuAffinity
+                  - key: ru.dotaclassic.io/cpuAffinity
                     operator: In
                     values:
                       - "true"
