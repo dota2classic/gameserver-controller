@@ -49,5 +49,6 @@ type GameServerSettings struct {
 	MatchmakingMode int64
 	TickRate        int
 	Image           string
+	LoadTimeout     int
 	CpuAffinity     bool
 }

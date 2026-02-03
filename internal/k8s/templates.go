@@ -41,6 +41,8 @@ type templateData struct {
 	TickRate   int
 	ConfigName string
 
+	LoadTimeout int
+
 	HostGamePort     int
 	HostSourceTVPort int
 }

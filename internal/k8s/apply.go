@@ -78,6 +78,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		MatchJson:    runSchema,
 		TickRate:     tickrate,
 		ConfigName:   cfgName,
+		LoadTimeout:  gameServerSettings.LoadTimeout,
 
 		GameServerImage: gameServerSettings.Image,
 

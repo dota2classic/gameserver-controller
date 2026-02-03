@@ -145,6 +145,8 @@ spec:
               value: "{{ .TickRate }}"
             - name: ADDITIONAL_CFG
               value: "{{ .ConfigName }}"
+            - name: LOAD_TIMEOUT
+              value: "{{ .LoadTimeout }}"
 
             - name: NET_PUBLIC_ADDR
               valueFrom:
