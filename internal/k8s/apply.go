@@ -74,6 +74,11 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		enableBans = 1
 	}
 
+	abandonHighQuality := 0
+	if evt.LobbyType == models.MATCHMAKING_MODE_HIGHROOM || evt.LobbyType == models.MATCHMAKING_MODE_UNRANKED {
+		abandonHighQuality = 1
+	}
+
 	data := templateData{
 		MatchId:      evt.MatchID,
 		GameMode:     evt.GameMode,
@@ -92,9 +97,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		HostSourceTVPort: tvPort,
 
 		// Plugins
-		DisableRunes:  0,
-		MidTowerToWin: 0,
-		EnableBans:    enableBans,
+		DisableRunes:       0,
+		MidTowerToWin:      0,
+		EnableBans:         enableBans,
+		AbandonHighQuality: abandonHighQuality,
 	}
 
 	// --- 1. CONFIGMAP ---
