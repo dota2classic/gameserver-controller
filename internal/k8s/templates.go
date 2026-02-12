@@ -45,6 +45,10 @@ type templateData struct {
 
 	HostGamePort     int
 	HostSourceTVPort int
+
+	EnableBans    int
+	DisableRunes  int
+	MidTowerToWin int
 }
 
 func createConfiguration[T any](templateContent string, data *templateData) (*T, error) {

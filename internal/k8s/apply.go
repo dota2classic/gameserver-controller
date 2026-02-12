@@ -52,6 +52,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	cfgName := "server.cfg"
 
 	tickrate := 30
+	// FIXME: this fails really bad if there is no settings for this mode. we should just fail with warning, not crash completely
 	gameServerSettings, err := db.GetSettingsForMode(evt.LobbyType)
 
 	if err != nil {
@@ -66,6 +67,11 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		jobTemplate = CpuAffinityJobTemplate
 	} else {
 		jobTemplate = RegularJobTemplate
+	}
+
+	enableBans := 0
+	if evt.GameMode == models.DOTA_GAME_MODE_RANKED_AP {
+		enableBans = 1
 	}
 
 	data := templateData{
@@ -84,6 +90,11 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,
+
+		// Plugins
+		DisableRunes:  0,
+		MidTowerToWin: 0,
+		EnableBans:    enableBans,
 	}
 
 	// --- 1. CONFIGMAP ---

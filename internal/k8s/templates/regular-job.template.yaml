@@ -144,6 +144,12 @@ spec:
               value: "{{ .ConfigName }}"
             - name: LOAD_TIMEOUT
               value: "{{ .LoadTimeout }}"
+            - name: ENABLE_BANS
+              value: "{{ .EnableBans }}"
+            - name: DISABLE_RUNES
+              value: "{{ .DisableRunes }}"
+            - name: MIDDLE_TOWER_TO_WIN
+              value: "{{ .MidTowerToWin }}"
               
             - name: NET_PUBLIC_ADDR
               valueFrom:
