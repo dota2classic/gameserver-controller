@@ -46,9 +46,8 @@ func reconcileMatches() error {
 		}
 
 		switch jobStatus {
-		case db.StatusLaunching:
-			log.Printf("Job %s is launching", mr.JobName)
-		case db.StatusPending:
+		case db.StatusPending, db.StatusLaunching:
+			log.Printf("Job %s is launching/pending", mr.JobName)
 			if mr.CreatedAt.Add(getExpirationTimeout()).Before(time.Now()) {
 				log.Printf("Cancelling stale job: its pending too long %s", mr.JobName)
 				deleteJobAndResources(client, &mr)
