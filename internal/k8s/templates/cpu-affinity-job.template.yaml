@@ -34,6 +34,11 @@ spec:
                     operator: In
                     values:
                       - "true"
+      dnsConfig:
+        options:
+          - name: single-request-reopen
+          - name: ndots
+            value: "5"
       containers:
         - name: sidecar
           resources:
@@ -83,8 +88,6 @@ spec:
                 name: shared-gameserver-secrets # Global cluster secrets
             - secretRef:
                 name: gameserver-secrets-{{ .MatchId }}  # Match specific secrets
-
-
         - name: gameserver
           resources:
             requests:

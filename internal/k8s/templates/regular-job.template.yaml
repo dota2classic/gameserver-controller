@@ -34,6 +34,11 @@ spec:
                     operator: In
                     values:
                       - "false"
+      dnsConfig:
+        options:
+          - name: single-request-reopen
+          - name: ndots
+            value: "5"
       containers:
         - name: sidecar
           resources:
