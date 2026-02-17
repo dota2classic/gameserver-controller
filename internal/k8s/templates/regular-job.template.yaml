@@ -5,10 +5,14 @@ metadata:
   namespace: gameservers
   labels:
     app-type: gameserver
+    ru.dotaclassic/matchId: "{{ .MatchId }}"
 spec:
   ttlSecondsAfterFinished: 60
   backoffLimit: 0
   template:
+    metadata:
+      labels:
+        ru.dotaclassic/matchId: "{{ .MatchId }}"
     spec:
       restartPolicy: Never  # don't restart Pod
       affinity:
