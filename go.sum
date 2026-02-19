@@ -28,8 +28,8 @@ github.com/docker/go-connections v0.5.0 h1:USnMq7hx7gwdVZq1L49hLXaFtUdTADjXGp+uj
 github.com/docker/go-connections v0.5.0/go.mod h1:ov60Kzw0kKElRwhNs9UlUHAE/F9Fe6GLaXnqyDdmEXc=
 github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
-github.com/dota2classic/d2c-go-models v0.0.0-20260219114338-8ea2f21f4eb6 h1:ruUpUcv0MShAbi3NrXBtyflgVBW1FQKB6NLjZyUB7P4=
-github.com/dota2classic/d2c-go-models v0.0.0-20260219114338-8ea2f21f4eb6/go.mod h1:NZGnsPcpDA66TfIImXWG5iKHDb3/RK+0X4B2mSbjXQc=
+github.com/dota2classic/d2c-go-models v0.0.0-20260219120025-29453a002dc9 h1:C+1qrwy6GW954C+LnIki+NUg2x1d8qkfLqv1cpeipug=
+github.com/dota2classic/d2c-go-models v0.0.0-20260219120025-29453a002dc9/go.mod h1:NZGnsPcpDA66TfIImXWG5iKHDb3/RK+0X4B2mSbjXQc=
 github.com/emicklei/go-restful/v3 v3.12.2 h1:DhwDP0vY3k8ZzE0RunuJy8GhNpPL6zqLkDf9B/a0/xU=
 github.com/emicklei/go-restful/v3 v3.12.2/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=

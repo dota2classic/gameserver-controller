@@ -92,10 +92,10 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		HostSourceTVPort: tvPort,
 
 		// Plugins
-		DisableRunes:       util.BoolToInt(evt.NoRunes),
-		MidTowerToWin:      util.BoolToInt(evt.MidTowerToWin),
-		KillsToWin:         evt.KillsToWin,
-		EnableBans:         util.BoolToInt(evt.EnableBanStage),
+		DisableRunes:       util.BoolToInt(evt.Params.NoRunes),
+		MidTowerToWin:      util.BoolToInt(evt.Params.MidTowerToWin),
+		KillsToWin:         evt.Params.KillsToWin,
+		EnableBans:         util.BoolToInt(evt.Params.EnableBanStage),
 		AbandonHighQuality: abandonHighQuality,
 	}
 
