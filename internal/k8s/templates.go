@@ -49,6 +49,7 @@ type templateData struct {
 	EnableBans         int
 	DisableRunes       int
 	MidTowerToWin      int
+	KillsToWin         int
 	AbandonHighQuality int
 }
 

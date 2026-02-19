@@ -3,7 +3,7 @@ module d2c-gs-controller
 go 1.24.0
 
 require (
-	github.com/dota2classic/d2c-go-models v0.0.0-20251111204534-bfc54ca75614
+	github.com/dota2classic/d2c-go-models v0.0.0-20260219102251-2442fa063f2b
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9

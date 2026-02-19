@@ -159,6 +159,8 @@ spec:
               value: "{{ .DisableRunes }}"
             - name: MIDDLE_TOWER_TO_WIN
               value: "{{ .MidTowerToWin }}"
+            - name: KILLS_TO_WIN
+              value: "{{ .KillsToWin }}"
 
             - name: ENABLE_ABANDON
               value: "1"
