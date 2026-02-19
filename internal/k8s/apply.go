@@ -69,11 +69,6 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		jobTemplate = RegularJobTemplate
 	}
 
-	enableBans := 0
-	if evt.GameMode == models.DOTA_GAME_MODE_RANKED_AP {
-		enableBans = 1
-	}
-
 	abandonHighQuality := 0
 	if evt.LobbyType == models.MATCHMAKING_MODE_HIGHROOM || evt.LobbyType == models.MATCHMAKING_MODE_UNRANKED {
 		abandonHighQuality = 1
@@ -100,7 +95,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		DisableRunes:       util.BoolToInt(evt.NoRunes),
 		MidTowerToWin:      util.BoolToInt(evt.MidTowerToWin),
 		KillsToWin:         evt.KillsToWin,
-		EnableBans:         enableBans,
+		EnableBans:         util.BoolToInt(evt.EnableBanStage),
 		AbandonHighQuality: abandonHighQuality,
 	}
 
