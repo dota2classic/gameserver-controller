@@ -62,7 +62,7 @@ func (h *HealthServer) Readiness(w http.ResponseWriter, r *http.Request) {
 
 func (h *HealthServer) Start(port int) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", h.Liveness)
+	mux.HandleFunc("/healthz", h.Readiness)
 	mux.HandleFunc("/readyz", h.Readiness)
 	return http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", port), mux)
 }
