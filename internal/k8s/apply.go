@@ -32,8 +32,16 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	password, err := util.GenerateSecureRandomString(12)
 
 	if err != nil {
+		log.Printf("Error generating RCON password: %v, using fallback", err)
 		password = "rconpassword"
 	}
+
+	if password == "" {
+		log.Printf("WARNING: Generated RCON password is empty, using fallback")
+		password = "rconpassword"
+	}
+
+	log.Printf("RCON password length for match %d: %d", evt.MatchID, len(password))
 
 	gsPort, tvPort, err := redis.AllocateGameServerPorts()
 
