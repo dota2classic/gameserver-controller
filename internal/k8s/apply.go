@@ -82,6 +82,15 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		abandonHighQuality = 1
 	}
 
+	image := "dota2classic/srcds:d684-latest"
+
+	switch evt.Patch {
+	case models.PATCH_DOTA_684_TURBO:
+		image = "dota2classic/srcds:d684-turbo-latest"
+	case models.PATCH_DOTA_684:
+		image = "dota2classic/srcds:d684-latest"
+	}
+
 	data := templateData{
 		MatchId:      evt.MatchID,
 		GameMode:     evt.GameMode,
@@ -94,7 +103,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		ConfigName:   cfgName,
 		LoadTimeout:  gameServerSettings.LoadTimeout,
 
-		GameServerImage: gameServerSettings.Image,
+		GameServerImage: image, // Infer image from "Patch"
 
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,
