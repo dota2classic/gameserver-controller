@@ -91,6 +91,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		image = "dota2classic/srcds:d684-latest"
 	}
 
+	log.Printf("Launching on image %s because received patch was %s", image, evt.Patch)
+
 	data := templateData{
 		MatchId:      evt.MatchID,
 		GameMode:     evt.GameMode,
