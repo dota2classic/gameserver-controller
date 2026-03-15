@@ -2,20 +2,19 @@ package util
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"math/big"
 )
 
-func GenerateSecureRandomString(length int) (string, error) {
-	// Calculate the number of bytes needed for the desired string length
-	// Base64 encoding expands the data, so we need fewer raw bytes.
-	// A common ratio is 3 bytes to 4 base64 characters.
-	// We'll use a slightly more generous calculation to ensure enough data.
-	numBytes := (length * 3) / 4
+const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	b := make([]byte, numBytes)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
+func GenerateSecureRandomString(length int) (string, error) {
+	result := make([]byte, length)
+	for i := range result {
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphanumeric))))
+		if err != nil {
+			return "", err
+		}
+		result[i] = alphanumeric[n.Int64()]
 	}
-	return base64.URLEncoding.EncodeToString(b)[:length], nil
+	return string(result), nil
 }
