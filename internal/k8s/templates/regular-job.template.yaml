@@ -30,14 +30,14 @@ spec:
                     values:
                       - "{{ .Region }}"
           # PREFERRED (prefer cpuAffinity=false)
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                  - key: ru.dotaclassic/cpuAffinity
-                    operator: In
-                    values:
-                      - "false"
+#          preferredDuringSchedulingIgnoredDuringExecution:
+#            - weight: 100
+#              preference:
+#                matchExpressions:
+#                  - key: ru.dotaclassic/cpuAffinity
+#                    operator: In
+#                    values:
+#                      - "false"
       dnsConfig:
         options:
           - name: single-request-reopen
@@ -94,8 +94,8 @@ spec:
         - name: gameserver
           resources:
             requests:
-              cpu: "500m"
-              memory: "500Mi"
+              cpu: "300m"
+              memory: "350Mi"
           imagePullPolicy: Always
           image: {{ .GameServerImage }}
           securityContext:
