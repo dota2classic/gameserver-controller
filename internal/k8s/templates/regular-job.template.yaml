@@ -63,7 +63,7 @@ spec:
             - name: replays
               mountPath: /root/dota/replays
             - name: dumps
-              mountPath: /tmp/dumps
+              mountPath: /tmp/dumps01
           env:
             - name: MATCH_ID
               value: "{{ .MatchId }}"
@@ -130,7 +130,7 @@ spec:
             - name: replays
               mountPath: /root/dota/replays
             - name: dumps
-              mountPath: /tmp/dumps
+              mountPath: /tmp/dumps01
             - name: dmi
               mountPath: /sys/devices/virtual/dmi/id
               readOnly: true
