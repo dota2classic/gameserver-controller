@@ -89,6 +89,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		image = "dota2classic/srcds:d684-turbo-latest"
 	case models.PATCH_DOTA_684:
 		image = "dota2classic/srcds:d684-latest"
+	case models.PATCH_DOTA_688:
+		image = "dota2classic/srcds:d684-crash-fix-latest"
 	}
 
 	log.Printf("Launching on image %s because received patch was %s", image, evt.Patch)
