@@ -82,7 +82,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		abandonHighQuality = 1
 	}
 
-	botDifficulty := 3
+	botDifficulty := 2
 
 	image := "dota2classic/srcds:d684-latest"
 
