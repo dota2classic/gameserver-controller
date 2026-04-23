@@ -82,6 +82,8 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		abandonHighQuality = 1
 	}
 
+	botDifficulty := 3
+
 	image := "dota2classic/srcds:d684-latest"
 
 	switch evt.Patch {
@@ -118,6 +120,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		KillsToWin:         evt.Params.KillsToWin,
 		EnableBans:         util.BoolToInt(evt.Params.EnableBanStage),
 		AbandonHighQuality: abandonHighQuality,
+		BotDifficulty:      botDifficulty,
 	}
 
 	// --- 1. CONFIGMAP ---

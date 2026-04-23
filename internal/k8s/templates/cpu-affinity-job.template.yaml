@@ -164,6 +164,9 @@ spec:
             - name: ABANDON_HIGH_QUALITY
               value: "{{ .AbandonHighQuality }}"
 
+            - name: BOT_DIFFICULTY
+              value: "{{ .BotDifficulty }}"
+
             - name: NET_PUBLIC_ADDR
               valueFrom:
                 fieldRef:

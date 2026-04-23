@@ -51,6 +51,8 @@ type templateData struct {
 	MidTowerToWin      int
 	KillsToWin         int
 	AbandonHighQuality int
+
+	BotDifficulty int
 }
 
 func createConfiguration[T any](templateContent string, data *templateData) (*T, error) {

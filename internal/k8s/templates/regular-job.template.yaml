@@ -161,6 +161,8 @@ spec:
               value: "{{ .MidTowerToWin }}"
             - name: KILLS_TO_WIN
               value: "{{ .KillsToWin }}"
+            - name: BOT_DIFFICULTY
+              value: "{{ .BotDifficulty }}"
 
             - name: ENABLE_ABANDON
               value: "1"
