@@ -60,21 +60,16 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	cfgName := "server.cfg"
 
 	tickrate := 30
-	// FIXME: this fails really bad if there is no settings for this mode. we should just fail with warning, not crash completely
+	jobTemplate := RegularJobTemplate
 	gameServerSettings, err := db.GetSettingsForMode(evt.LobbyType)
 
 	if err != nil {
-		log.Printf("Error getting gameserver settings for mode %d: %v", evt.LobbyType, err)
+		log.Printf("Warning: no gameserver settings for mode %d, using defaults (tickrate=%d, cpu affinity off): %v", evt.LobbyType, tickrate, err)
 	} else {
 		tickrate = gameServerSettings.TickRate
-	}
-
-	jobTemplate := CpuAffinityJobTemplate
-
-	if gameServerSettings.CpuAffinity {
-		jobTemplate = CpuAffinityJobTemplate
-	} else {
-		jobTemplate = RegularJobTemplate
+		if gameServerSettings.CpuAffinity {
+			jobTemplate = CpuAffinityJobTemplate
+		}
 	}
 
 	abandonHighQuality := 0
