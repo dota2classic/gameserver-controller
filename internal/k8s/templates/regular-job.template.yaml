@@ -15,6 +15,7 @@ spec:
         ru.dotaclassic/matchId: "{{ .MatchId }}"
     spec:
       restartPolicy: Never  # don't restart Pod
+      priorityClassName: game-server
       affinity:
         nodeAffinity:
           # REQUIRED (must be on gameserver nodes)
@@ -47,8 +48,10 @@ spec:
         - name: sidecar
           resources:
             requests:
-              cpu: "10m"
-              memory: "30Mi"
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              memory: "256Mi"
           imagePullPolicy: Always
           image: dota2classic/srcds-sidecar:k8s-latest
           ports:
@@ -94,10 +97,13 @@ spec:
         - name: gameserver
           resources:
             requests:
-              cpu: "300m"
-              memory: "350Mi"
+              cpu: "700m"
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
           imagePullPolicy: Always
           image: {{ .GameServerImage }}
+          command: ["perl", "-e", 'my $attr=pack("LLQlLQQQ",48,0,0,0,0,500000,0,0);syscall(314,0,$attr,0)==0 or print STDERR "sched_setattr failed: $!\n";exec {$ARGV[0]} @ARGV or die "exec failed: $!\n";', "/root/entrypoint.sh"]
           securityContext:
             capabilities:
               add: [ "SYS_NICE" ]

@@ -10,7 +10,38 @@ import (
 	"github.com/dota2classic/d2c-go-models/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
+
+var sidecarResources = corev1.ResourceRequirements{
+	Requests: corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("50m"),
+		corev1.ResourceMemory: resource.MustParse("128Mi"),
+	},
+	Limits: corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
+	},
+}
+
+const gamePriorityClass = "game-server"
+
+var gameserverCommand = []string{
+	"perl",
+	"-e",
+	`my $attr=pack("LLQlLQQQ",48,0,0,0,0,500000,0,0);syscall(314,0,$attr,0)==0 or print STDERR "sched_setattr failed: $!\n";exec {$ARGV[0]} @ARGV or die "exec failed: $!\n";`,
+	"/root/entrypoint.sh",
+}
+
+var gameserverResources = corev1.ResourceRequirements{
+	Requests: corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("700m"),
+		corev1.ResourceMemory: resource.MustParse("512Mi"),
+	},
+	Limits: corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse("1Gi"),
+	},
+}
 
 var data = templateData{
 	MatchId:         123,
@@ -96,6 +127,10 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 	//assertCpuAffinity(t, gameserver, true)
 	// Check that image is ok
 	assertImage(t, gameserver, data.GameServerImage)
+	assertResources(t, sidecar, sidecarResources)
+	assertResources(t, gameserver, gameserverResources)
+	assertPriorityClass(t, job)
+	assertCommand(t, gameserver, gameserverCommand)
 }
 
 func TestCreateRegularJob(t *testing.T) {
@@ -137,6 +172,10 @@ func TestCreateRegularJob(t *testing.T) {
 	//assertCpuAffinity(t, gameserver, false)
 	// Check that image is ok
 	assertImage(t, gameserver, data.GameServerImage)
+	assertResources(t, sidecar, sidecarResources)
+	assertResources(t, gameserver, gameserverResources)
+	assertPriorityClass(t, job)
+	assertCommand(t, gameserver, gameserverCommand)
 }
 
 func jsonEqual(a, b string) bool {
@@ -254,6 +293,27 @@ func contains(slice []string, val string) bool {
 		}
 	}
 	return false
+}
+
+func assertResources(t *testing.T, container *corev1.Container, want corev1.ResourceRequirements) {
+	t.Helper()
+	if !apiequality.Semantic.DeepEqual(container.Resources, want) {
+		t.Errorf("Container %s resources mismatch. Expected %v, got %v", container.Name, want, container.Resources)
+	}
+}
+
+func assertPriorityClass(t *testing.T, job *batchv1.Job) {
+	t.Helper()
+	if got := job.Spec.Template.Spec.PriorityClassName; got != gamePriorityClass {
+		t.Errorf("Pod priorityClassName mismatch. Expected %s, got %s", gamePriorityClass, got)
+	}
+}
+
+func assertCommand(t *testing.T, container *corev1.Container, want []string) {
+	t.Helper()
+	if !reflect.DeepEqual(container.Command, want) || len(container.Args) != 0 {
+		t.Errorf("Container %s command mismatch. Expected %q with no args, got %q args %q", container.Name, want, container.Command, container.Args)
+	}
 }
 
 func assertImage(t *testing.T, container *corev1.Container, image string) {
