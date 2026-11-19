@@ -24,6 +24,8 @@ var sidecarResources = corev1.ResourceRequirements{
 	},
 }
 
+const gamePriorityClass = "game-server"
+
 var gameserverResources = corev1.ResourceRequirements{
 	Requests: corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("400m"),
@@ -120,6 +122,7 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 	assertImage(t, gameserver, data.GameServerImage)
 	assertResources(t, sidecar, sidecarResources)
 	assertResources(t, gameserver, gameserverResources)
+	assertPriorityClass(t, job)
 }
 
 func TestCreateRegularJob(t *testing.T) {
@@ -163,6 +166,7 @@ func TestCreateRegularJob(t *testing.T) {
 	assertImage(t, gameserver, data.GameServerImage)
 	assertResources(t, sidecar, sidecarResources)
 	assertResources(t, gameserver, gameserverResources)
+	assertPriorityClass(t, job)
 }
 
 func jsonEqual(a, b string) bool {
@@ -286,6 +290,13 @@ func assertResources(t *testing.T, container *corev1.Container, want corev1.Reso
 	t.Helper()
 	if !apiequality.Semantic.DeepEqual(container.Resources, want) {
 		t.Errorf("Container %s resources mismatch. Expected %v, got %v", container.Name, want, container.Resources)
+	}
+}
+
+func assertPriorityClass(t *testing.T, job *batchv1.Job) {
+	t.Helper()
+	if got := job.Spec.Template.Spec.PriorityClassName; got != gamePriorityClass {
+		t.Errorf("Pod priorityClassName mismatch. Expected %s, got %s", gamePriorityClass, got)
 	}
 }
 

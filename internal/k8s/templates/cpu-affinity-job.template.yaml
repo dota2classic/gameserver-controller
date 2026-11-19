@@ -14,6 +14,7 @@ spec:
         ru.dotaclassic/matchId: "{{ .MatchId }}"
     spec:
       restartPolicy: Never  # don't restart Pod
+      priorityClassName: game-server
       affinity:
         nodeAffinity:
           # REQUIRED (must be on gameserver nodes)
