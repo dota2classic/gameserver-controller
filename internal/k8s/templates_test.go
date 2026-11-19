@@ -28,7 +28,7 @@ const gamePriorityClass = "game-server"
 
 var gameserverResources = corev1.ResourceRequirements{
 	Requests: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("400m"),
+		corev1.ResourceCPU:    resource.MustParse("700m"),
 		corev1.ResourceMemory: resource.MustParse("512Mi"),
 	},
 	Limits: corev1.ResourceList{
