@@ -46,11 +46,10 @@ spec:
         - name: sidecar
           resources:
             requests:
-              cpu: "10m"
-              memory: "30Mi"
+              cpu: "50m"
+              memory: "128Mi"
             limits:
-              cpu: "10m"
-              memory: "30Mi"
+              memory: "256Mi"
           imagePullPolicy: Always
           image: dota2classic/srcds-sidecar:k8s-latest
           ports:
@@ -94,8 +93,10 @@ spec:
         - name: gameserver
           resources:
             requests:
-              cpu: "450m"
-              memory: "400Mi"
+              cpu: "400m"
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
           imagePullPolicy: Always
           image: {{ .GameServerImage }}
           ports:
