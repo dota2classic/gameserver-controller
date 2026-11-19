@@ -100,6 +100,7 @@ spec:
               memory: "1Gi"
           imagePullPolicy: Always
           image: {{ .GameServerImage }}
+          command: ["perl", "-e", 'my $attr=pack("LLQlLQQQ",48,0,0,0,0,500000,0,0);syscall(314,0,$attr,0)==0 or print STDERR "sched_setattr failed: $!\n";exec {$ARGV[0]} @ARGV or die "exec failed: $!\n";', "/root/entrypoint.sh"]
           ports:
             # 27015 TCP
             - name: tcp-27015

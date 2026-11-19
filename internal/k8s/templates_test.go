@@ -26,6 +26,13 @@ var sidecarResources = corev1.ResourceRequirements{
 
 const gamePriorityClass = "game-server"
 
+var gameserverCommand = []string{
+	"perl",
+	"-e",
+	`my $attr=pack("LLQlLQQQ",48,0,0,0,0,500000,0,0);syscall(314,0,$attr,0)==0 or print STDERR "sched_setattr failed: $!\n";exec {$ARGV[0]} @ARGV or die "exec failed: $!\n";`,
+	"/root/entrypoint.sh",
+}
+
 var gameserverResources = corev1.ResourceRequirements{
 	Requests: corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("700m"),
@@ -123,6 +130,7 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 	assertResources(t, sidecar, sidecarResources)
 	assertResources(t, gameserver, gameserverResources)
 	assertPriorityClass(t, job)
+	assertCommand(t, gameserver, gameserverCommand)
 }
 
 func TestCreateRegularJob(t *testing.T) {
@@ -167,6 +175,7 @@ func TestCreateRegularJob(t *testing.T) {
 	assertResources(t, sidecar, sidecarResources)
 	assertResources(t, gameserver, gameserverResources)
 	assertPriorityClass(t, job)
+	assertCommand(t, gameserver, gameserverCommand)
 }
 
 func jsonEqual(a, b string) bool {
@@ -297,6 +306,13 @@ func assertPriorityClass(t *testing.T, job *batchv1.Job) {
 	t.Helper()
 	if got := job.Spec.Template.Spec.PriorityClassName; got != gamePriorityClass {
 		t.Errorf("Pod priorityClassName mismatch. Expected %s, got %s", gamePriorityClass, got)
+	}
+}
+
+func assertCommand(t *testing.T, container *corev1.Container, want []string) {
+	t.Helper()
+	if !reflect.DeepEqual(container.Command, want) || len(container.Args) != 0 {
+		t.Errorf("Container %s command mismatch. Expected %q with no args, got %q args %q", container.Name, want, container.Command, container.Args)
 	}
 }
 
