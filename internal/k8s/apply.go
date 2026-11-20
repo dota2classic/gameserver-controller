@@ -60,13 +60,15 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 	cfgName := "server.cfg"
 
 	tickrate := 30
+	loadTimeout := 90
 	jobTemplate := RegularJobTemplate
 	gameServerSettings, err := db.GetSettingsForMode(evt.LobbyType)
 
 	if err != nil {
-		log.Printf("Warning: no gameserver settings for mode %d, using defaults (tickrate=%d, cpu affinity off): %v", evt.LobbyType, tickrate, err)
+		log.Printf("Warning: no gameserver settings for mode %d, using defaults (tickrate=%d, load timeout=%d, cpu affinity off): %v", evt.LobbyType, tickrate, loadTimeout, err)
 	} else {
 		tickrate = gameServerSettings.TickRate
+		loadTimeout = gameServerSettings.LoadTimeout
 		if gameServerSettings.CpuAffinity {
 			jobTemplate = CpuAffinityJobTemplate
 		}
@@ -105,7 +107,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		MatchJson:    runSchema,
 		TickRate:     tickrate,
 		ConfigName:   cfgName,
-		LoadTimeout:  gameServerSettings.LoadTimeout,
+		LoadTimeout:  loadTimeout,
 
 		GameServerImage: image, // Infer image from "Patch"
 
