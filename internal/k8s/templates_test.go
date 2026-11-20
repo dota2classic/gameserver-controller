@@ -54,6 +54,48 @@ var data = templateData{
 	GameServerImage: "myimage123",
 }
 
+func TestCPUReservationByModeInBothTemplates(t *testing.T) {
+	cases := []struct {
+		name string
+		mode models.MatchmakingMode
+		game models.DotaGameMode
+		cpu  string
+	}{
+		{"allpick", models.MATCHMAKING_MODE_UNRANKED, models.DOTA_GAME_MODE_ALLPICK, "1000m"},
+		{"bots", models.MATCHMAKING_MODE_BOTS, models.DOTA_GAME_MODE_ALLPICK, "250m"},
+		{"bots2x2", models.MATCHMAKING_MODE_BOTS_2X2, models.DOTA_GAME_MODE_ALLPICK, "250m"},
+		{"solomid", models.MATCHMAKING_MODE_SOLOMID, models.DOTA_GAME_MODE_ALLPICK, "250m"},
+		{"tournamentSolomid", models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID, models.DOTA_GAME_MODE_ALLPICK, "250m"},
+		{"privateLobbyUnchanged", models.MATCHMAKING_MODE_LOBBY, models.DOTA_GAME_MODE_ALLPICK, "425m"},
+		{"highroomUnchanged", models.MATCHMAKING_MODE_HIGHROOM, models.DOTA_GAME_MODE_ALLPICK, "425m"},
+		{"otherGameModeUnchanged", models.MATCHMAKING_MODE_UNRANKED, models.DotaGameMode(2), "425m"},
+	}
+	for name, tmpl := range map[string]string{"regular": RegularJobTemplate, "affinity": CpuAffinityJobTemplate} {
+		for _, tc := range cases {
+			t.Run(name+"/"+tc.name, func(t *testing.T) {
+				input := data
+				input.LobbyType, input.GameMode = tc.mode, tc.game
+				job, err := createConfiguration[batchv1.Job](tmpl, &input)
+				if err != nil {
+					t.Fatal(err)
+				}
+				game := job.Spec.Template.Spec.Containers[1]
+				expected := gameserverResources.DeepCopy()
+				expected.Requests[corev1.ResourceCPU] = resource.MustParse(tc.cpu)
+				if !apiequality.Semantic.DeepEqual(game.Resources, *expected) {
+					t.Fatalf("unexpected game resources: %v; want %v", game.Resources, *expected)
+				}
+				if !apiequality.Semantic.DeepEqual(job.Spec.Template.Spec.Containers[0].Resources, sidecarResources) {
+					t.Fatal("sidecar resources changed")
+				}
+				if _, capped := game.Resources.Limits[corev1.ResourceCPU]; capped {
+					t.Fatal("CPU limit must remain absent")
+				}
+			})
+		}
+	}
+}
+
 func TestCreateConfigmap(t *testing.T) {
 	cfg, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, &data)
 	configName := fmt.Sprintf("gameserver-config-%d", data.MatchId)
