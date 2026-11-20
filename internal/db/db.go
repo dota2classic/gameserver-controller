@@ -3,9 +3,11 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
+	"net"
+	"net/url"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/dota2classic/d2c-go-models/util"
@@ -28,11 +30,17 @@ func ConnectAndMigrate() *sql.DB {
 		user := os.Getenv("POSTGRES_USER")
 		password := os.Getenv("POSTGRES_PASSWORD")
 
-		dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", user, password, host, port, "postgres")
+		dbURL := url.URL{
+			Scheme:   "postgres",
+			User:     url.UserPassword(user, password),
+			Host:     net.JoinHostPort(host, strconv.Itoa(port)),
+			Path:     "/postgres",
+			RawQuery: "sslmode=disable",
+		}
 
-		log.Println(dbURL)
+		log.Printf("Connecting to Postgres at %s%s", dbURL.Host, dbURL.Path)
 
-		newdb, err := sql.Open("postgres", dbURL)
+		newdb, err := sql.Open("postgres", dbURL.String())
 		if err != nil {
 			log.Fatalf("failed to connect to db: %v", err)
 		}

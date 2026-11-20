@@ -7,16 +7,31 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dota2classic/d2c-go-models/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const publishTimeout = 10 * time.Second
+
+type publishFunc func(exchange, routingKey string, msg amqp.Publishing) error
+
+func (r *Rabbit) PublishGameServerNotFound(matchID int64) error {
+	return r.Publish("GameServerNotFoundEvent", &models.GameServerNotFoundEvent{MatchID: matchID})
+}
 
 func (r *Rabbit) Publish(routingKey string, event any) error {
 	body, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
+	return r.publishConfirmed(r.exchange, routingKey, amqp.Publishing{
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+	})
+}
+
+func (r *Rabbit) publishConfirmed(exchange, routingKey string, msg amqp.Publishing) error {
 	if r.Conn == nil || r.Conn.IsClosed() {
 		return errors.New("rabbitmq connection is not open")
 	}
@@ -32,11 +47,7 @@ func (r *Rabbit) Publish(routingKey string, event any) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), publishTimeout)
 	defer cancel()
-	confirmation, err := ch.PublishWithDeferredConfirmWithContext(ctx, r.exchange, routingKey, true, false, amqp.Publishing{
-		ContentType:  "application/json",
-		DeliveryMode: amqp.Persistent,
-		Body:         body,
-	})
+	confirmation, err := ch.PublishWithDeferredConfirmWithContext(ctx, exchange, routingKey, true, false, msg)
 	if err != nil {
 		return err
 	}

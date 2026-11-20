@@ -28,8 +28,8 @@ func main() {
 	}
 
 	db.ConnectAndMigrate()
-	rabbit.InitRabbit()
 	redis.InitRedisClient()
+	rabbit.InitRabbit()
 
 	go redis.Subscribe("KillServerRequestedEvent", func(msg *models.KillServerRequestedEvent) (*void, error) {
 		return nil, monitor.KillServer(msg.MatchID)
