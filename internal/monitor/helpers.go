@@ -4,13 +4,11 @@ import (
 	"context"
 	"d2c-gs-controller/internal/db"
 	"d2c-gs-controller/internal/k8s"
-	"d2c-gs-controller/internal/rabbit"
 	"d2c-gs-controller/internal/util"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/dota2classic/d2c-go-models/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -134,10 +132,6 @@ func deleteJobAndResources(client *kubernetes.Clientset, mr *db.MatchResources) 
 
 	// delete DB row
 	db.DeleteMatchResources(mr.MatchId)
-}
-
-func emitNoFreeServer(mr *db.MatchResources) error {
-	return rabbit.Instance.Publish("GameServerNotFoundEvent", &models.GameServerNotFoundEvent{MatchID: mr.MatchId})
 }
 
 func getExpirationTimeout() time.Duration {

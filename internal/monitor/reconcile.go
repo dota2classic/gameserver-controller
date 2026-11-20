@@ -4,6 +4,7 @@ import (
 	"context"
 	"d2c-gs-controller/internal/db"
 	"d2c-gs-controller/internal/k8s"
+	"d2c-gs-controller/internal/rabbit"
 	"d2c-gs-controller/internal/redis"
 	"d2c-gs-controller/internal/util"
 	"encoding/json"
@@ -49,7 +50,7 @@ func reconcileMatches() error {
 		case db.StatusPending, db.StatusLaunching:
 			log.Printf("Job %s is launching/pending", mr.JobName)
 			if mr.CreatedAt.Add(getExpirationTimeout()).Before(time.Now()) {
-				if err := emitNoFreeServer(&mr); err != nil {
+				if err := rabbit.Instance.PublishGameServerNotFound(mr.MatchId); err != nil {
 					log.Printf("Keeping stale job %s until GameServerNotFoundEvent is published: %v", mr.JobName, err)
 					continue
 				}
