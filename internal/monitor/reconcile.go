@@ -73,19 +73,21 @@ func reconcileMatches() error {
 	return nil
 }
 
+const (
+	serverKeyPattern   = "server:*"
+	serverKeyScanCount = 1000
+)
+
 func checkHeartbeats() error {
 	ctx := context.Background()
 	client := redis.Client
 
-	keys, err := client.Keys(ctx, "server:*").Result()
-	if err != nil {
-		return err
-	}
-
 	now := time.Now()
 	timeout := 40 * time.Second
 
-	for _, key := range keys {
+	keys := client.Scan(ctx, 0, serverKeyPattern, serverKeyScanCount).Iterator()
+	for keys.Next(ctx) {
+		key := keys.Val()
 		raw, err := client.Get(ctx, key).Result()
 		if err != nil {
 			continue
@@ -110,5 +112,5 @@ func checkHeartbeats() error {
 		}
 	}
 
-	return nil
+	return keys.Err()
 }
