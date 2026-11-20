@@ -62,7 +62,7 @@ func (d *templateData) GameServerCPURequest() string {
 		models.MATCHMAKING_MODE_SOLOMID, models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID:
 		return "250m"
 	case models.MATCHMAKING_MODE_UNRANKED:
-		if d.GameMode == models.DOTA_GAME_MODE_ALLPICK {
+		if d.GameMode == models.DOTA_GAME_MODE_ALLPICK || d.GameMode == models.DOTA_GAME_MODE_RANKED_AP {
 			return "1000m"
 		}
 	}
