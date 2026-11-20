@@ -49,12 +49,9 @@ func reconcileMatches() error {
 		case db.StatusPending, db.StatusLaunching:
 			log.Printf("Job %s is launching/pending", mr.JobName)
 			if mr.CreatedAt.Add(getExpirationTimeout()).Before(time.Now()) {
-				if err := emitNoFreeServer(&mr); err != nil {
-					log.Printf("Keeping stale job %s until GameServerNotFoundEvent is published: %v", mr.JobName, err)
-					continue
-				}
 				log.Printf("Cancelling stale job: its pending too long %s", mr.JobName)
 				deleteJobAndResources(client, &mr)
+				emitNoFreeServer(&mr)
 			}
 		case db.StatusDone:
 			log.Printf("Job %s done, cleaning up resources", mr.JobName)
