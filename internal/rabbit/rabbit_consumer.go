@@ -41,8 +41,11 @@ type consumer[T any] struct {
 func launchRetryPolicy() retryPolicy {
 	delay := util.GetEnvDuration("GAMESERVER_LAUNCH_RETRY_DELAY", "5s")
 	timeout := util.GetEnvDuration("GAMESERVER_LAUNCH_RETRY_TIMEOUT", "2m")
-	if delay <= 0 {
-		log.Fatalf("GAMESERVER_LAUNCH_RETRY_DELAY must be positive, got %v", delay)
+	if delay < time.Millisecond {
+		log.Fatalf("GAMESERVER_LAUNCH_RETRY_DELAY must be at least 1ms, got %v", delay)
+	}
+	if timeout < 0 {
+		log.Fatalf("GAMESERVER_LAUNCH_RETRY_TIMEOUT must not be negative, got %v", timeout)
 	}
 	return retryPolicy{delay: delay, maxRetries: int(timeout / delay)}
 }
