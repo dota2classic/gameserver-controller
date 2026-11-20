@@ -16,7 +16,7 @@ import (
 
 var sidecarResources = corev1.ResourceRequirements{
 	Requests: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("50m"),
+		corev1.ResourceCPU:    resource.MustParse("25m"),
 		corev1.ResourceMemory: resource.MustParse("128Mi"),
 	},
 	Limits: corev1.ResourceList{
@@ -35,7 +35,7 @@ var gameserverCommand = []string{
 
 var gameserverResources = corev1.ResourceRequirements{
 	Requests: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("700m"),
+		corev1.ResourceCPU:    resource.MustParse("425m"),
 		corev1.ResourceMemory: resource.MustParse("512Mi"),
 	},
 	Limits: corev1.ResourceList{
