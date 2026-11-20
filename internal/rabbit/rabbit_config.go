@@ -1,9 +1,11 @@
 package rabbit
 
 import (
-	"fmt"
 	"log"
+	"net"
+	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dota2classic/d2c-go-models/util"
@@ -69,9 +71,14 @@ func InitRabbit() {
 
 	exchange := "app.events"
 
-	amqpURL := fmt.Sprintf("amqp://%s:%s@%s:%d/", username, password, host, port)
+	amqpURL := url.URL{
+		Scheme: "amqp",
+		User:   url.UserPassword(username, password),
+		Host:   net.JoinHostPort(host, strconv.Itoa(port)),
+		Path:   "/",
+	}
 
-	Instance = NewRabbit(amqpURL)
+	Instance = NewRabbit(amqpURL.String())
 
 	ch, err := Instance.getChannel()
 	if err != nil {
