@@ -58,12 +58,13 @@ type templateData struct {
 // GameServerCPURequest changes scheduling weight and reserved capacity, not a CPU cap.
 func (d *templateData) GameServerCPURequest() string {
 	switch d.LobbyType {
-	case models.MATCHMAKING_MODE_BOTS, models.MATCHMAKING_MODE_BOTS_2X2,
-		models.MATCHMAKING_MODE_SOLOMID, models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID:
+	case models.MATCHMAKING_MODE_BOTS, models.MATCHMAKING_MODE_BOTS_2X2:
+		return "300m"
+	case models.MATCHMAKING_MODE_SOLOMID, models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID:
 		return "250m"
 	case models.MATCHMAKING_MODE_UNRANKED:
 		if d.GameMode == models.DOTA_GAME_MODE_ALLPICK || d.GameMode == models.DOTA_GAME_MODE_RANKED_AP {
-			return "1000m"
+			return "600m"
 		}
 	}
 	return "425m"

@@ -61,10 +61,10 @@ func TestCPUReservationByModeInBothTemplates(t *testing.T) {
 		game models.DotaGameMode
 		cpu  string
 	}{
-		{"allpick", models.MATCHMAKING_MODE_UNRANKED, models.DOTA_GAME_MODE_ALLPICK, "1000m"},
-		{"rankedAllPickUsedByPublicQueue", models.MATCHMAKING_MODE_UNRANKED, models.DOTA_GAME_MODE_RANKED_AP, "1000m"},
-		{"bots", models.MATCHMAKING_MODE_BOTS, models.DOTA_GAME_MODE_ALLPICK, "250m"},
-		{"bots2x2", models.MATCHMAKING_MODE_BOTS_2X2, models.DOTA_GAME_MODE_ALLPICK, "250m"},
+		{"allpick", models.MATCHMAKING_MODE_UNRANKED, models.DOTA_GAME_MODE_ALLPICK, "600m"},
+		{"rankedAllPickUsedByPublicQueue", models.MATCHMAKING_MODE_UNRANKED, models.DOTA_GAME_MODE_RANKED_AP, "600m"},
+		{"bots", models.MATCHMAKING_MODE_BOTS, models.DOTA_GAME_MODE_ALLPICK, "300m"},
+		{"bots2x2", models.MATCHMAKING_MODE_BOTS_2X2, models.DOTA_GAME_MODE_ALLPICK, "300m"},
 		{"solomid", models.MATCHMAKING_MODE_SOLOMID, models.DOTA_GAME_MODE_ALLPICK, "250m"},
 		{"tournamentSolomid", models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID, models.DOTA_GAME_MODE_ALLPICK, "250m"},
 		{"privateLobbyUnchanged", models.MATCHMAKING_MODE_LOBBY, models.DOTA_GAME_MODE_ALLPICK, "425m"},
