@@ -48,44 +48,53 @@ func (b *fakeBroker) deadLetterBack() *amqp.Delivery {
 }
 
 func TestFailingLaunchIsRetriedWithDelayThenReportedAsNotFound(t *testing.T) {
-	const maxRetries = 3
-	attempts, giveUps := 0, 0
-	var reported []int64
-	c := consumer[models.LaunchGameServerCommand]{
-		queue: "work",
-		retry: retryPolicy{delay: 5 * time.Second, maxRetries: maxRetries},
-		handle: func(*models.LaunchGameServerCommand) error {
-			attempts++
-			return errors.New("OOM command not allowed when used memory > 'maxmemory'")
-		},
-		retryable: func(error) bool { return true },
-		giveUp: func(cmd *models.LaunchGameServerCommand) error {
-			giveUps++
-			if giveUps == 1 {
-				return errors.New("broker unavailable")
+	failures := map[string]func(){
+		"error": func() {},
+		"panic": func() { panic("nil pointer dereference") },
+	}
+	for name, fail := range failures {
+		t.Run(name, func(t *testing.T) {
+			const maxRetries = 3
+			attempts, giveUps := 0, 0
+			var reported []int64
+			c := consumer[models.LaunchGameServerCommand]{
+				queue: "work",
+				retry: retryPolicy{delay: 5 * time.Second, maxRetries: maxRetries},
+				handle: func(*models.LaunchGameServerCommand) error {
+					attempts++
+					fail()
+					return errors.New("OOM command not allowed when used memory > 'maxmemory'")
+				},
+				retryable: isRetryableLaunchError,
+				giveUp: func(cmd *models.LaunchGameServerCommand) error {
+					giveUps++
+					if giveUps == 1 {
+						return errors.New("broker unavailable")
+					}
+					reported = append(reported, cmd.MatchID)
+					return nil
+				},
 			}
-			reported = append(reported, cmd.MatchID)
-			return nil
-		},
-	}
 
-	broker := &fakeBroker{}
-	deliveries := 0
-	for d := (&amqp.Delivery{Acknowledger: broker, Body: []byte(`{"matchId":42}`)}); d != nil; d = broker.deadLetterBack() {
-		deliveries++
-		if deliveries > 3*maxRetries {
-			t.Fatal("retry loop did not terminate")
-		}
-		c.process(d, broker.publish(t))
-	}
+			broker := &fakeBroker{}
+			deliveries := 0
+			for d := (&amqp.Delivery{Acknowledger: broker, Body: []byte(`{"matchId":42}`)}); d != nil; d = broker.deadLetterBack() {
+				deliveries++
+				if deliveries > 3*maxRetries {
+					t.Fatal("retry loop did not terminate")
+				}
+				c.process(d, broker.publish(t))
+			}
 
-	if attempts != maxRetries+1 {
-		t.Errorf("launch attempts = %d, want %d", attempts, maxRetries+1)
-	}
-	if len(reported) != 1 || reported[0] != 42 {
-		t.Errorf("GameServerNotFoundEvent published for %v, want [42]", reported)
-	}
-	if broker.acks != deliveries || broker.nacks != 0 {
-		t.Errorf("acks = %d, nacks = %d over %d deliveries; want every delivery acked once", broker.acks, broker.nacks, deliveries)
+			if attempts != maxRetries+1 {
+				t.Errorf("launch attempts = %d, want %d", attempts, maxRetries+1)
+			}
+			if len(reported) != 1 || reported[0] != 42 {
+				t.Errorf("GameServerNotFoundEvent published for %v, want [42]", reported)
+			}
+			if broker.acks != deliveries || broker.nacks != 0 {
+				t.Errorf("acks = %d, nacks = %d over %d deliveries; want every delivery acked once", broker.acks, broker.nacks, deliveries)
+			}
+		})
 	}
 }

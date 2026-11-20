@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -54,19 +55,21 @@ func (r *Rabbit) initConsumers() {
 	retry := launchRetryPolicy()
 	for _, region := range regions {
 		c := consumer[models.LaunchGameServerCommand]{
-			queue:  fmt.Sprintf("d2c-gs-controller.LaunchGameServerCommand.%s", region),
-			key:    fmt.Sprintf("LaunchGameServerCommand.%s", region),
-			retry:  retry,
-			handle: queues.HandleLaunchGameServerCommand,
-			retryable: func(err error) bool {
-				return !errors.Is(err, k8s.ErrJobAlreadyExists)
-			},
+			queue:     fmt.Sprintf("d2c-gs-controller.LaunchGameServerCommand.%s", region),
+			key:       fmt.Sprintf("LaunchGameServerCommand.%s", region),
+			retry:     retry,
+			handle:    queues.HandleLaunchGameServerCommand,
+			retryable: isRetryableLaunchError,
 			giveUp: func(cmd *models.LaunchGameServerCommand) error {
 				return r.PublishGameServerNotFound(cmd.MatchID)
 			},
 		}
 		go c.run(r)
 	}
+}
+
+func isRetryableLaunchError(err error) bool {
+	return !errors.Is(err, k8s.ErrJobAlreadyExists)
 }
 
 func (c consumer[T]) retryQueue() string {
@@ -124,7 +127,7 @@ func (c consumer[T]) process(m *amqp.Delivery, publish publishFunc) {
 
 	failures := failureCount(m)
 	if failures <= c.retry.maxRetries {
-		err := c.handle(&msg)
+		err := c.attempt(&msg)
 		if err == nil {
 			m.Ack(false)
 			return
@@ -155,6 +158,16 @@ func (c consumer[T]) process(m *amqp.Delivery, publish publishFunc) {
 		return
 	}
 	m.Ack(false)
+}
+
+func (c consumer[T]) attempt(msg *T) (err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			log.Printf("[%s] Handler panicked: %v\n%s", c.queue, p, debug.Stack())
+			err = fmt.Errorf("handler panicked: %v", p)
+		}
+	}()
+	return c.handle(msg)
 }
 
 func failureCount(m *amqp.Delivery) int {
