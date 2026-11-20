@@ -55,6 +55,20 @@ type templateData struct {
 	BotDifficulty int
 }
 
+// GameServerCPURequest changes scheduling weight and reserved capacity, not a CPU cap.
+func (d *templateData) GameServerCPURequest() string {
+	switch d.LobbyType {
+	case models.MATCHMAKING_MODE_BOTS, models.MATCHMAKING_MODE_BOTS_2X2,
+		models.MATCHMAKING_MODE_SOLOMID, models.MATCHMAKING_MODE_TOURNAMENT_SOLOMID:
+		return "250m"
+	case models.MATCHMAKING_MODE_UNRANKED:
+		if d.GameMode == models.DOTA_GAME_MODE_ALLPICK {
+			return "1000m"
+		}
+	}
+	return "425m"
+}
+
 func createConfiguration[T any](templateContent string, data *templateData) (*T, error) {
 	tmpl, err := template.New("tmpl").Parse(templateContent)
 	if err != nil {

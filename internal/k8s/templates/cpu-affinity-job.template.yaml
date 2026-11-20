@@ -94,7 +94,7 @@ spec:
         - name: gameserver
           resources:
             requests:
-              cpu: "425m"
+              cpu: "{{ .GameServerCPURequest }}"
               memory: "512Mi"
             limits:
               memory: "1Gi"
