@@ -79,10 +79,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		abandonHighQuality = 1
 	}
 
-	botDifficulty := 3
-	if evt.LobbyType == models.MATCHMAKING_MODE_BOTS {
-		botDifficulty = 2
-	}
+	botDifficulty := botDifficultyForMode(evt.LobbyType)
 
 	image := "dota2classic/srcds:d684-latest"
 
