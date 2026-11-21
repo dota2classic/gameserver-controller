@@ -169,6 +169,10 @@ spec:
 
             - name: BOT_DIFFICULTY
               value: "{{ .BotDifficulty }}"
+            {{- if .GameServerNiceOverride }}
+            - name: SRCDS_NICE
+              value: "{{ .GameServerNiceOverride }}"
+            {{- end }}
 
             - name: NET_PUBLIC_ADDR
               valueFrom:

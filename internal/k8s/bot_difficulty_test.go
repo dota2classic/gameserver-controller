@@ -42,3 +42,38 @@ func TestBotDifficultyInBothJobTemplates(t *testing.T) {
 		}
 	}
 }
+
+func TestUnfairBotsPreserveExistingNiceTiers(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		mode models.MatchmakingMode
+		tick int
+		want string
+	}{
+		{"regularBots", models.MATCHMAKING_MODE_BOTS, 30, "15"},
+		{"highTickKeepsImagePriority", models.MATCHMAKING_MODE_BOTS, 60, ""},
+		{"bots2x2KeepsImagePriority", models.MATCHMAKING_MODE_BOTS_2X2, 30, ""},
+		{"allpickKeepsImagePriority", models.MATCHMAKING_MODE_UNRANKED, 60, ""},
+	} {
+		for name, tmpl := range map[string]string{"regular": RegularJobTemplate, "affinity": CpuAffinityJobTemplate} {
+			t.Run(tc.name+"/"+name, func(t *testing.T) {
+				input := data
+				input.LobbyType, input.TickRate = tc.mode, tc.tick
+				input.BotDifficulty = botDifficultyForMode(tc.mode)
+				job, err := createConfiguration[batchv1.Job](tmpl, &input)
+				if err != nil {
+					t.Fatal(err)
+				}
+				got := ""
+				for _, env := range job.Spec.Template.Spec.Containers[1].Env {
+					if env.Name == "SRCDS_NICE" {
+						got = env.Value
+					}
+				}
+				if got != tc.want {
+					t.Fatalf("SRCDS_NICE = %q; want %q", got, tc.want)
+				}
+			})
+		}
+	}
+}
