@@ -169,6 +169,10 @@ spec:
               value: "{{ .KillsToWin }}"
             - name: BOT_DIFFICULTY
               value: "{{ .BotDifficulty }}"
+            {{- if .GameServerNiceOverride }}
+            - name: SRCDS_NICE
+              value: "{{ .GameServerNiceOverride }}"
+            {{- end }}
 
             - name: ENABLE_ABANDON
               value: "1"
