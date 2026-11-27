@@ -147,6 +147,9 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 
 func ensureConfigMap(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*corev1.ConfigMap, error) {
 	configMap, err := createConfiguration[corev1.ConfigMap](ConfigmapTemplate, data)
+	if err != nil {
+		return nil, err
+	}
 	_, err = clientset.CoreV1().ConfigMaps(namespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		if k8serrors.IsAlreadyExists(err) {
@@ -164,6 +167,9 @@ func ensureConfigMap(ctx context.Context, clientset *kubernetes.Clientset, names
 
 func ensureSecret(ctx context.Context, clientset *kubernetes.Clientset, namespace string, data *templateData) (*corev1.Secret, error) {
 	secret, err := createConfiguration[corev1.Secret](SecretTemplate, data)
+	if err != nil {
+		return nil, err
+	}
 	_, err = clientset.CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
 
 	if err != nil {
@@ -187,7 +193,10 @@ func createJob(
 	template string,
 	data *templateData,
 ) (*batchv1.Job, error) {
-	job, err := createConfiguration[batchv1.Job](template, data)
+	job, err := renderJob(template, data)
+	if err != nil {
+		return nil, err
+	}
 	_, err = clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 
 	if err != nil {
