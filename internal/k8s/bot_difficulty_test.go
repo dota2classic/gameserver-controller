@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/dota2classic/d2c-go-models/models"
-	batchv1 "k8s.io/api/batch/v1"
 )
 
 func TestBotDifficultyInBothJobTemplates(t *testing.T) {
@@ -25,7 +24,7 @@ func TestBotDifficultyInBothJobTemplates(t *testing.T) {
 				input := data
 				input.LobbyType = tc.mode
 				input.BotDifficulty = botDifficultyForMode(tc.mode)
-				job, err := createConfiguration[batchv1.Job](tmpl, &input)
+				job, err := renderJob(tmpl, &input)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -60,7 +59,7 @@ func TestUnfairBotsPreserveExistingNiceTiers(t *testing.T) {
 				input := data
 				input.LobbyType, input.TickRate = tc.mode, tc.tick
 				input.BotDifficulty = botDifficultyForMode(tc.mode)
-				job, err := createConfiguration[batchv1.Job](tmpl, &input)
+				job, err := renderJob(tmpl, &input)
 				if err != nil {
 					t.Fatal(err)
 				}

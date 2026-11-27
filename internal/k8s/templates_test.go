@@ -76,7 +76,7 @@ func TestCPUReservationByModeInBothTemplates(t *testing.T) {
 			t.Run(name+"/"+tc.name, func(t *testing.T) {
 				input := data
 				input.LobbyType, input.GameMode = tc.mode, tc.game
-				job, err := createConfiguration[batchv1.Job](tmpl, &input)
+				job, err := renderJob(tmpl, &input)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -132,7 +132,7 @@ func TestCreateSecret(t *testing.T) {
 }
 
 func TestCreateCpuAffinityJob(t *testing.T) {
-	job, err := createConfiguration[batchv1.Job](CpuAffinityJobTemplate, &data)
+	job, err := renderJob(CpuAffinityJobTemplate, &data)
 	jobName := fmt.Sprintf("gameserver-cpu-affinity-job-%d", data.MatchId)
 
 	if err != nil {
@@ -177,7 +177,7 @@ func TestCreateCpuAffinityJob(t *testing.T) {
 }
 
 func TestCreateRegularJob(t *testing.T) {
-	job, err := createConfiguration[batchv1.Job](RegularJobTemplate, &data)
+	job, err := renderJob(RegularJobTemplate, &data)
 	jobName := fmt.Sprintf("gameserver-regular-job-%d", data.MatchId)
 
 	if err != nil {
