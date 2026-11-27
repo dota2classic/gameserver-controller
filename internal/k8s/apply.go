@@ -107,6 +107,7 @@ func DeployMatchResources(ctx context.Context, clientset *kubernetes.Clientset, 
 		LoadTimeout:  loadTimeout,
 
 		GameServerImage: image, // Infer image from "Patch"
+		SidecarImage:    sidecarImage,
 
 		HostGamePort:     gsPort,
 		HostSourceTVPort: tvPort,

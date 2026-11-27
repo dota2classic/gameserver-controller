@@ -37,6 +37,7 @@ type templateData struct {
 	RconPassword    string
 	MatchJson       string
 	GameServerImage string
+	SidecarImage    string
 
 	TickRate   int
 	ConfigName string

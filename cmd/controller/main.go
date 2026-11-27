@@ -2,6 +2,7 @@ package main
 
 import (
 	"d2c-gs-controller/internal/db"
+	"d2c-gs-controller/internal/k8s"
 	"d2c-gs-controller/internal/monitor"
 	"d2c-gs-controller/internal/monitoring"
 	"d2c-gs-controller/internal/rabbit"
@@ -27,6 +28,7 @@ func main() {
 		log.Println("No .env file found, relying on environment variables")
 	}
 
+	k8s.InitSidecarImage()
 	db.ConnectAndMigrate()
 	redis.InitRedisClient()
 	rabbit.InitRabbit()
