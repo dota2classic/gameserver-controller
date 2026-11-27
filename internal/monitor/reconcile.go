@@ -100,7 +100,11 @@ func checkHeartbeats() error {
 
 		ts := time.Unix(info.Timestamp, 0)
 
-		if now.Sub(ts) > timeout {
+		if age := now.Sub(ts); age > timeout {
+			if gamePodRunning(ctx, info.MatchId) {
+				log.Printf("Heartbeat of %s is %s old, but the game pod of match %d is running", info.URL, age.Round(time.Second), info.MatchId)
+				continue
+			}
 			// Server considered dead
 			redis.ServerStatus(info.URL, false)
 

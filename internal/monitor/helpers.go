@@ -104,6 +104,19 @@ func getJobStatus(ctx context.Context, client *kubernetes.Clientset, job *batchv
 	return db.StatusPending
 }
 
+func gamePodRunning(ctx context.Context, matchId int64) bool {
+	mr, err := db.FindMatchResources(matchId)
+	if err != nil {
+		return false
+	}
+	client := k8s.GetClient()
+	job, err := client.BatchV1().Jobs(k8s.Namespace).Get(ctx, mr.JobName, metav1.GetOptions{})
+	if err != nil {
+		return false
+	}
+	return getJobStatus(ctx, client, job) == db.StatusRunning
+}
+
 func KillServer(matchId int64) error {
 
 	mr, err := db.FindMatchResources(matchId)
