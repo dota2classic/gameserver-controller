@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+func MustGetEnv(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Fatalf("Missing %s", key)
+	}
+	return val
+}
+
 func GetEnvDuration(key, def string) time.Duration {
 	val := os.Getenv(key)
 	if val == "" {

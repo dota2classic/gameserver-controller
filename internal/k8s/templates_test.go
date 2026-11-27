@@ -52,6 +52,7 @@ var data = templateData{
 	RconPassword:    "12345",
 	MatchJson:       `{"key":"value"}`,
 	GameServerImage: "myimage123",
+	SidecarImage:    "dota2classic/srcds-sidecar@sha256:0123",
 }
 
 func TestCPUReservationByModeInBothTemplates(t *testing.T) {

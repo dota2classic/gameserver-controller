@@ -6,7 +6,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func TestEveryJobTemplateGetsSidecarNetworkTelemetry(t *testing.T) {
+func TestEveryJobTemplateGetsPodFeatures(t *testing.T) {
 	for name, tmpl := range map[string]string{"regular": RegularJobTemplate, "affinity": CpuAffinityJobTemplate} {
 		job, err := renderJob(tmpl, &data)
 		if err != nil {
@@ -37,6 +37,20 @@ func TestEveryJobTemplateGetsSidecarNetworkTelemetry(t *testing.T) {
 			t.Errorf("%s: sidecar lacks read-only ipdb mount", name)
 		}
 		checkEnvVar(t, sidecar, "IPDB_DIR", ipdbMountPath)
+		checkEnvVar(t, sidecar, "FRAME_METRICS_ENABLED", "true")
+		if sidecar.Image != data.SidecarImage || sidecar.ImagePullPolicy != corev1.PullIfNotPresent {
+			t.Errorf("%s: sidecar must run the configured pinned image: %s %s", name, sidecar.Image, sidecar.ImagePullPolicy)
+		}
+		frameVolume, frameMount := false, false
+		for _, v := range pod.Volumes {
+			frameVolume = frameVolume || (v.Name == frameMetricsVolume && v.ConfigMap != nil && v.ConfigMap.Name == frameMetricsVolume)
+		}
+		for _, m := range pod.Containers[1].VolumeMounts {
+			frameMount = frameMount || (m.Name == frameMetricsVolume && m.MountPath == frameMetricsPath && m.SubPath == frameMetricsPlugin && m.ReadOnly)
+		}
+		if !frameVolume || !frameMount {
+			t.Errorf("%s: gameserver lacks the frame metrics plugin (volume %v, mount %v)", name, frameVolume, frameMount)
+		}
 		for _, m := range pod.Containers[1].VolumeMounts {
 			if m.Name == ipdbVolume {
 				t.Errorf("%s: gameserver must not mount ipdb", name)
